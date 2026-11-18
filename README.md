@@ -1,8 +1,8 @@
 # RSV seasonality
 
-Research project with Will and Torkel Loman on the relationship between climate and respiratory syncytial virus (RSV) transmission, combining renewal equation models with neural climate response functions in Julia.
+Research project with Will and Torkel Loman on the relationship between climate and respiratory syncytial virus (RSV) transmission, using renewal equation models with a neural climate component in Julia.
 
-The initial comparison is Japan and England, with other UK nations included when compatible surveillance data are available. We will test whether a shared climate response can explain different epidemic timing after accounting for susceptibility, mixing, and observation processes. Multiple transmission peaks are a hypothesis to evaluate, rather than a constraint to impose.
+The initial analysis will jointly model Japan and winter-dominant regions of the United States, using accessible historical surveillance data. A central hypothesis is that climate-dependent behaviour changes indoor exposure, contacts, and ventilation in both cold and hot/humid conditions. The neural component will represent the joint temperature–humidity response, including such behavioural pathways. We will test transfer across countries while accounting for susceptibility, local context, and observation processes, and retain a design that can expand to more countries. Canada is a promising alternative or additional comparator; the UK is optional.
 
 ## Planning notes
 
