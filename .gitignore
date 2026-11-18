@@ -1,0 +1,25 @@
+# Local datasets and analysis outputs
+/data/raw/
+/data/processed/
+/results/*
+!/results/README.md
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+.cdsapirc
+LocalPreferences.toml
+
+# Julia caches and transient output (analysis manifests should be tracked)
+.julia/
+*.jl.cov
+*.jl.mem
+*.ji
+*.pidfile
+
+# Editors and OS metadata
+.DS_Store
+.vscode/
+.idea/
+*~
