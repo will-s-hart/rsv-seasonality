@@ -1,0 +1,84 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,bm}
+\usepackage{mathtools}
+\usepackage[hidelinks]{hyperref}
+
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8em}
+
+\title{An introduction to universal differential equations and fitting unknown functions}
+\author{}
+\date{21 November 2026}
+
+\begin{document}
+
+\maketitle
+
+\vspace{-36pt}
+
+This note introduces the approach we plan to use for learning the climate dependence of RSV transmission. Section~\ref{sec:function_inference} is adapted from the methods of our paper on universal differential equations in epidemiology (in preparation). Section~\ref{sec:renewal} says how it applies to the renewal equation of this project.
+
+\section{Inferring unknown functions from data}\label{sec:function_inference}
+
+A typical inference problem is parameter fitting. Here, we have a model, $\mathcal{M}(\vec{p})$, which depends on a vector of unknown scalar parameters, $\vec{p} = (p_1, \ldots, p_m)$, and we wish to determine $\vec{p}$ from some data, $\mathcal{D}$. This is commonly done through \emph{likelihood maximisation}, which uses the log-likelihood function
+\begin{equation*}
+    \mathcal{L}(\vec{p}) = \log P(\mathcal{D} \mid \vec{p}).
+\end{equation*}
+That is, for any set of parameter values, $\vec{p}$, $\mathcal{L}(\vec{p})$ is the logarithm of the probability (or probability density) that the model generates the data. Our point estimate of $\vec{p}$ is then the maximum likelihood estimate,
+\begin{equation*}
+    \hat{\vec{p}} = \operatorname*{arg\,max}_{\vec{p}}\ \mathcal{L}(\vec{p}),
+\end{equation*}
+which can be found using any non-linear optimisation algorithm (e.g.\ gradient descent, Nelder--Mead, or BFGS).
+
+Often, however, the unknowns of a model are not only scalar parameters, but also parts of its dynamics whose form is unknown. These can frequently be expressed as unknown functions, so that the model becomes $\mathcal{M}(\vec{p}, \vec{f})$, where $\vec{f} = (f_1, \ldots, f_k)$ is a set of unknown functions, $f_i:\mathbb{R}^{n_i} \to \mathbb{R}$. In principle, this model can still be fitted by maximising its likelihood,
+\begin{equation*}
+    (\hat{\vec{p}}, \hat{\vec{f}}) = \operatorname*{arg\,max}_{\vec{p},\, \vec{f}}\ \mathcal{L}(\vec{p}, \vec{f}),
+\end{equation*}
+the difference being that the optimisation is now over functions as well as scalar values, which standard optimisation algorithms cannot handle.
+
+In practice, this is resolved by introducing \emph{universal function approximators}. These are generic, highly parameterised functions, $U_i(\,\cdot\,;\vec{\theta}_i):\mathbb{R}^{n_i} \to \mathbb{R}$, with parameter vectors $\vec{\theta}_i = (\theta_{i,1}, \ldots, \theta_{i,\ell_i})$. They have the \emph{universal approximation property}: given a sufficiently large parameter vector, they can approximate any continuous function on a compact (closed and bounded) domain to arbitrary accuracy~\cite{hornik1989multilayer, leshno1993multilayer}. Replacing each unknown function, $f_i$, by an approximator, $U_i$, gives a model whose only unknowns are the scalar parameters
+\begin{equation*}
+    (\vec{p}, \vec{\theta}_1, \ldots, \vec{\theta}_k) = (p_1, \ldots, p_m, \theta_{1,1}, \ldots, \theta_{1,\ell_1}, \ldots, \theta_{k,1}, \ldots, \theta_{k,\ell_k}).
+\end{equation*}
+This model can be fitted to the data using standard optimisation methods for scalar parameters:
+\begin{equation*}
+    (\hat{\vec{p}}, \hat{\vec{\theta}}_1, \ldots, \hat{\vec{\theta}}_k) = \operatorname*{arg\,max}_{\vec{p},\, \vec{\theta}_1, \ldots, \vec{\theta}_k}\ \mathcal{L}\bigl(\vec{p}, U_1(\,\cdot\,;\vec{\theta}_1), \ldots, U_k(\,\cdot\,;\vec{\theta}_k)\bigr).
+\end{equation*}
+Finally, an approximation of each unknown function, $f_i$, is recovered by evaluating the fitted approximator, $U_i(\,\cdot\,;\hat{\vec{\theta}}_i)$, across its domain.
+
+There are many alternative universal function approximators. We use neural networks, primarily due to the extensive software support that exists for them, and in particular relatively small, fully connected, feedforward networks (typically fewer than 15 internal nodes). The choice of output activation can impose known constraints: a non-negative one (such as softplus) or an exponential link ensures that the fitted function is positive, as a transmission rate must be. Other constraints, such as monotonicity, can also be imposed.
+
+\section{Renewal equations rather than differential equations}\label{sec:renewal}
+
+Models with a universal function approximator embedded in them are known as universal differential equations (UDEs)~\cite{rackauckas2020universal}, since the original setting is a differential equation in which part of the right-hand side is unknown. Our model is not a differential equation, but a renewal equation, which computes the number of new infections at each discrete time point as a weighted sum of earlier ones. Strictly, it is therefore not a UDE. This does not matter for the approach of Section~\ref{sec:function_inference}, which nowhere uses the form of the model. It needs only that the log-likelihood $\mathcal{L}(\vec{p}, \vec{\theta}_1, \ldots, \vec{\theta}_k)$ can be computed for given parameter values, and, for gradient-based optimisation, that it can be differentiated with respect to them. A renewal equation satisfies both, and the important part, learning unknown functions from data, carries over unchanged.
+
+As an example, in a renewal equation with temperature-dependent transmission, the number of new infections on day $t$ is
+\begin{equation*}
+    i_t = \frac{S_t}{N} R_0(T_t) \sum_{s = 1}^{A} w_s i_{t-s} + l,
+\end{equation*}
+where $S_t$ is the number of susceptible individuals, $N$ the population size, $T_t$ the temperature on day $t$, $w_s$ the generation-interval weights, and $l$ the number of imported infections. The temperature time series is known, while the form of $R_0(\,\cdot\,)$ is not. Replacing it by a neural network, $R_0(T) = U(T;\vec{\theta})$, gives a model that is fitted to case data as in Section~\ref{sec:function_inference}, and the fitted $U(\,\cdot\,;\hat{\vec{\theta}})$ is our estimate of how transmission depends on temperature. In this project, the unknown function may depend on humidity as well, $U(T, q;\vec{\theta})$, and the ways of sharing it across several datasets are discussed in \texttt{ude-types-considered.md}.
+
+\begin{thebibliography}{9}
+
+\bibitem{hornik1989multilayer}
+K.~Hornik, M.~Stinchcombe, and H.~White.
+\newblock Multilayer feedforward networks are universal approximators.
+\newblock \emph{Neural Networks}, 2(5):359--366, 1989.
+
+\bibitem{leshno1993multilayer}
+M.~Leshno, V.~Y. Lin, A.~Pinkus, and S.~Schocken.
+\newblock Multilayer feedforward networks with a nonpolynomial activation function can approximate any function.
+\newblock \emph{Neural Networks}, 6(6):861--867, 1993.
+
+\bibitem{rackauckas2020universal}
+C.~Rackauckas, Y.~Ma, J.~Martensen, C.~Warner, K.~Zubov, R.~Supekar, D.~Skinner, A.~Ramadhan, and A.~Edelman.
+\newblock Universal differential equations for scientific machine learning.
+\newblock arXiv:2001.04385, 2020.
+
+\end{thebibliography}
+
+\end{document}

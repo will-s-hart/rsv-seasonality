@@ -10,6 +10,8 @@ The initial analysis will jointly model Japan and winter-dominant regions of the
 - [Data sources and feasibility](notes/data-sources.md)
 - [Tentative modelling methodology](notes/modelling-methodology.md)
 - [Analysis plan and Will/Torkel responsibilities](notes/analysis-plan.md)
+- [UDE types considered for integrating several datasets](notes/ude-types-considered.md)
+- [Introduction to UDEs and fitting unknown functions](notes/introduction-to-udes.pdf) (source: `notes/introduction-to-udes.tex`)
 
 These are provisional research notes dated 18 November 2026. No empirical models have been fitted and no source datasets have been downloaded into this repository.
 
