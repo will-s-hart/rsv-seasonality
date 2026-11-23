@@ -1,0 +1,178 @@
+schema_version = 1
+years = [2013, 2014, 2015, 2016, 2017, 2018, 2019]
+age_band = "0–4 inclusive"
+
+[publishers.jp]
+name = "Statistics Bureau of Japan"
+terms_url = "https://www.e-stat.go.jp/en/terms-of-use"
+
+[publishers.us]
+name = "U.S. Census Bureau, Population Division"
+terms_url = "https://www.census.gov/about/policies/citation.html"
+
+[panels.jp]
+geography = "prefecture"
+reference_month_day = "10-01"
+universe = "total resident population, all nationalities and sexes"
+locations = 47
+expected_rows = 329
+
+[panels.us]
+geography = "state_or_district"
+reference_month_day = "07-01"
+universe = "resident population, all sexes, races and Hispanic origins"
+locations = 51
+expected_rows = 357
+
+[panels.pr]
+geography = "commonwealth"
+reference_month_day = "07-01"
+universe = "resident population, all sexes"
+locations = 1
+expected_rows = 7
+
+# The optional expected_sha256 field belongs to the source entry after empirical review.
+# With no pin, the local receipt records the observed digest and leaves it unpinned.
+
+[[sources]]
+id = "jp-2013-age"
+panel = "jp"
+publisher = "jp"
+table = "Prefectures Table 10 (e-Stat 000024032531)"
+vintage = "2013 original annual Population Estimates"
+release_date = "2014-04-15"
+years = [2013]
+source_unit = "thousand persons (release summary; confirm in workbook)"
+role = "age_and_total"
+format = "spreadsheet"
+catalog_url = "https://www.e-stat.go.jp/en/stat-search/files?layout=datalist&lid=000001118081"
+url = "https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=0&statInfId=000024032531"
+
+[[sources]]
+id = "jp-2013-total"
+panel = "jp"
+publisher = "jp"
+table = "Prefectures Table 4 (e-Stat 000024032525)"
+vintage = "2013 original annual Population Estimates"
+release_date = "2014-04-15"
+years = [2013]
+source_unit = "thousand persons (release summary; confirm in workbook)"
+role = "total_control"
+format = "spreadsheet"
+catalog_url = "https://www.e-stat.go.jp/en/stat-search/files?layout=datalist&lid=000001118081"
+url = "https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=0&statInfId=000024032525"
+
+[[sources]]
+id = "jp-2014-age"
+panel = "jp"
+publisher = "jp"
+table = "Prefectures Table 10 (e-Stat 000029026259)"
+vintage = "2014 original annual Population Estimates"
+release_date = "2015-04-17"
+years = [2014]
+source_unit = "thousand persons (release summary; confirm in workbook)"
+role = "age_and_total"
+format = "spreadsheet"
+catalog_url = "https://www.e-stat.go.jp/en/stat-search/files?layout=datalist&lid=000001132435"
+url = "https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=0&statInfId=000029026259"
+
+[[sources]]
+id = "jp-2014-total"
+panel = "jp"
+publisher = "jp"
+table = "Prefectures Table 4 (e-Stat 000029026253)"
+vintage = "2014 original annual Population Estimates"
+release_date = "2015-04-17"
+years = [2014]
+source_unit = "thousand persons (release summary; confirm in workbook)"
+role = "total_control"
+format = "spreadsheet"
+catalog_url = "https://www.e-stat.go.jp/en/stat-search/files?layout=datalist&lid=000001132435"
+url = "https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=0&statInfId=000029026253"
+
+[[sources]]
+id = "jp-2015-census"
+panel = "jp"
+publisher = "jp"
+table = "Apportionment reference Table 2 (e-Stat 000031496978)"
+vintage = "2015 Population Census, original unknown-age and nationality apportionment"
+release_date = "2016-11-24"
+years = [2015]
+source_unit = "persons"
+role = "age_and_total"
+format = "csv"
+catalog_url = "https://www.e-stat.go.jp/stat-search/files?stat_infid=000031496978&layout=datalist&tstat=000001080615"
+url = "https://www.e-stat.go.jp/stat-search/file-download?fileKind=1&statInfId=000031496978"
+
+[[sources]]
+id = "jp-2016-2019-age"
+panel = "jp"
+publisher = "jp"
+table = "Prefectures Table 10 (e-Stat 000032166848)"
+vintage = "2015–2020 intercensal adjustment of Population Estimates"
+release_date = "2022-02-03"
+years = [2016, 2017, 2018, 2019]
+source_unit = "thousand persons (release summary; confirm in workbook)"
+role = "age_and_total"
+format = "spreadsheet"
+catalog_url = "https://www.e-stat.go.jp/en/stat-search/files?layout=datalist&lid=000001287677&page=1"
+url = "https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=4&statInfId=000032166848"
+
+[[sources]]
+id = "jp-2016-2019-total"
+panel = "jp"
+publisher = "jp"
+table = "Prefectures Table 5 (e-Stat 000032166843)"
+vintage = "2015–2020 intercensal adjustment of Population Estimates"
+release_date = "2022-02-03"
+years = [2016, 2017, 2018, 2019]
+source_unit = "thousand persons (release summary; confirm in workbook)"
+role = "total_control"
+format = "spreadsheet"
+catalog_url = "https://www.e-stat.go.jp/en/stat-search/files?layout=datalist&lid=000001287677&page=1"
+url = "https://www.e-stat.go.jp/en/stat-search/file-download?fileKind=4&statInfId=000032166843"
+
+[[sources]]
+id = "us-states"
+panel = "us"
+publisher = "us"
+table = "SC-EST2020INT-ALLDATA6"
+vintage = "2010–2020 State Characteristics Intercensal Estimates"
+release_date = "2025-09-30"
+years = [2013, 2014, 2015, 2016, 2017, 2018, 2019]
+source_unit = "persons"
+role = "age_and_total"
+format = "csv"
+catalog_url = "https://www.census.gov/data/tables/time-series/demo/popest/intercensal-2010-2020-state-detail.html"
+layout_url = "https://www2.census.gov/programs-surveys/popest/technical-documentation/file-layouts/2010-2020/intercensal/state/SC-EST2020INT-ALLDATA6.pdf"
+url = "https://www2.census.gov/programs-surveys/popest/datasets/2010-2020/intercensal/state/asrh/sc-est2020int-alldata6.csv"
+
+[[sources]]
+id = "us-national-control"
+panel = "us"
+publisher = "us"
+table = "NC-EST2020INT-AGESEX-RES"
+vintage = "2010–2020 National Characteristics Intercensal Estimates"
+release_date = "2025-09-30"
+years = [2013, 2014, 2015, 2016, 2017, 2018, 2019]
+geography = "United States national resident total"
+source_unit = "persons"
+role = "age_and_total_control"
+format = "csv"
+catalog_url = "https://www.census.gov/data/tables/time-series/demo/popest/intercensal-2010-2020-national-detail.html"
+layout_url = "https://www2.census.gov/programs-surveys/popest/technical-documentation/file-layouts/2010-2020/intercensal/national/NC-EST2020INT-AGESEX-RES.pdf"
+url = "https://www2.census.gov/programs-surveys/popest/datasets/2010-2020/intercensal/national/asrh/nc-est2020int-agesex-res.csv"
+
+[[sources]]
+id = "pr-commonwealth"
+panel = "pr"
+publisher = "us"
+table = "PRC-EST2020INT-AGESEX"
+vintage = "2010–2020 Puerto Rico Commonwealth Characteristics Intercensal Estimates"
+release_date = "2025-09-30"
+years = [2013, 2014, 2015, 2016, 2017, 2018, 2019]
+source_unit = "persons"
+role = "age_and_total"
+format = "spreadsheet"
+catalog_url = "https://www.census.gov/data/tables/time-series/demo/popest/intercensal-2010-2020-puerto-rico-detail.html"
+url = "https://www2.census.gov/programs-surveys/popest/tables/2010-2020/intercensal/puerto-rico/asrh/prc-est2020int-agesex.xlsx"

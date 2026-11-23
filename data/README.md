@@ -9,3 +9,5 @@ Suggested epidemiology fields: `location_id`, `period_start`, `period_end`, `out
 Suggested daily climate fields: `location_id`, `date`, `temperature_c`, `dewpoint_c`, `surface_pressure_pa`, `specific_humidity_g_kg`, `relative_humidity_pct`, and `precipitation_mm`. Derive humidity at the native temporal resolution before aggregation and record spatial weights. Use source-defined epidemiological weeks when aggregating observations.
 
 See [data sources](../notes/data-sources.md) for access routes, limitations, and the initial feasibility gate. No data files are bundled in the skeleton.
+
+See [annual demographic sources, 2013–2019](../notes/demographic-sources-2013-2019.md) for the source contract, staging commands, US state/DC build, and remaining official-file checks.
