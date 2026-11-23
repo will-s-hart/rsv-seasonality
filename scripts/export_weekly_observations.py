@@ -5,7 +5,9 @@ import argparse
 import csv
 from datetime import date
 from pathlib import Path
+import stat
 import sys
+from tempfile import NamedTemporaryFile
 from typing import NamedTuple, Optional
 
 import check_surveillance_sources as audit
@@ -102,13 +104,44 @@ def write_observations(directory, stream):
     writer.writerows(rows)
 
 
+def write_output_file(directory, destination):
+    temporary = None
+    try:
+        with NamedTemporaryFile(
+            mode="w", encoding="utf-8", newline="", dir=destination.parent,
+            prefix=".weekly-observations-", suffix=".tmp", delete=False,
+        ) as stream:
+            temporary = Path(stream.name)
+            write_observations(directory, stream)
+
+        try:
+            mode = destination.lstat().st_mode
+        except FileNotFoundError:
+            pass  # A new output keeps the temporary file's private permissions.
+        else:
+            if not stat.S_ISREG(mode):
+                raise ValueError(f"{destination}: output destination must be a regular file")
+            temporary.chmod(mode & 0o777)
+        temporary.replace(destination)
+        temporary = None
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", type=Path, help="local source directory from the audit note")
+    parser.add_argument(
+        "-o", "--output", type=Path,
+        help="write to a CSV file by atomic replacement (default: write to stdout)",
+    )
     args = parser.parse_args()
-    # A fixed encoding and newline convention keep the file reproducible across hosts.
-    sys.stdout.reconfigure(encoding="utf-8", newline="")
-    write_observations(args.directory, sys.stdout)
+    if args.output is None:
+        sys.stdout.reconfigure(encoding="utf-8", newline="")
+        write_observations(args.directory, sys.stdout)
+    else:
+        write_output_file(args.directory, args.output)
 
 
 if __name__ == "__main__":

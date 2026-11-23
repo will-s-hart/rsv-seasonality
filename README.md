@@ -35,6 +35,6 @@ julia --startup-file=no --project=. scripts/check_setup.jl
 | `scripts/` | Reproducible command-line entry points |
 | `data/` | Data conventions and local raw/processed data, excluded from Git |
 | `results/` | Local generated figures, tables, and fitted objects, excluded from Git |
-| `.github/workflows/` | Julia package-loading smoke check |
+| `.github/workflows/` | Julia package-loading smoke check and synthetic Python fixtures |
 
 For each downloaded dataset, record provenance, access date, source version, licence, units, and a checksum before using it. Data redistribution remains subject to the original provider's terms; the repository licence covers original project material only.

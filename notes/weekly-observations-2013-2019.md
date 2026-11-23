@@ -9,8 +9,10 @@ From the repository root, download the 29 official audit inputs to `data/raw/sur
 ```sh
 mkdir -p data/processed
 python -B scripts/export_weekly_observations.py data/raw/surveillance-audit \
-    > data/processed/weekly_observations.csv
+    --output data/processed/weekly_observations.csv
 ```
+
+With `--output`, the command replaces the destination atomically after generation and a successful close. If generation fails, any previous CSV stays in place. An existing destination must be a regular file. Its read, write and execute permission bits are preserved, and a new output starts with owner-only access. Omit `--output` to write the same CSV to stdout for a pipeline. Shell redirection with `>` truncates its destination before the exporter runs.
 
 The command validates all inputs against the audit SHA-256 manifest and parses the weekly records before writing the CSV. It writes UTF-8 with LF line endings, a single header and empty fields for null values. Row order is Japan by diagnosis week then prefecture code, followed by US PCR then antigen, each by numeric HHS region then reporting week. Keep the output under the Git-ignored `data/processed/` directory. [Audit SHA-256 manifest](../scripts/surveillance_sources.sha256).
 

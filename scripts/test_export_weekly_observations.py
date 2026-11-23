@@ -1,8 +1,12 @@
 import csv
 from contextlib import contextmanager
 from io import StringIO
+import os
 from pathlib import Path
-from tempfile import TemporaryDirectory
+import stat
+import subprocess
+import sys
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
@@ -79,7 +83,9 @@ class ExportTests(unittest.TestCase):
         ) as verify:
             export.write_observations(cls.directory, stream)
             verify.assert_called_once_with(cls.directory)
-        cls.rows = list(csv.DictReader(StringIO(stream.getvalue())))
+        csv_text = stream.getvalue()
+        cls.csv_bytes = csv_text.encode("utf-8")
+        cls.rows = list(csv.DictReader(StringIO(csv_text)))
         cls.by_key = {}
         for row in cls.rows:
             key = (
@@ -180,6 +186,94 @@ class ExportTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "missing source file"):
                 export.write_observations(Path(temporary), stream)
             self.assertEqual(stream.getvalue(), "")
+
+    def test_cli_missing_pinned_input_preserves_output(self):
+        with TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            sources = directory / "missing-inputs"
+            sources.mkdir()
+            destination = directory / "weekly.csv"
+            destination.write_bytes(self.csv_bytes)
+            result = subprocess.run(
+                [sys.executable, "-B", export.__file__, str(sources), "--output", str(destination)],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 1, result.stderr)
+            self.assertIn("2013-8-1.xls: missing source file", result.stderr)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(destination.read_bytes(), self.csv_bytes)
+            self.assertEqual(set(directory.iterdir()), {sources, destination})
+
+    def test_cli_success_replaces_output_with_deterministic_bytes(self):
+        with TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            destination = directory / "weekly.csv"
+            argv = [export.__file__, str(self.directory), "--output", str(destination)]
+            with patch.object(sys, "argv", argv), patch.object(
+                audit, "workbook", nesid_fixture
+            ), patch.object(audit, "verify_inputs"):
+                export.main()
+                self.assertEqual(destination.read_bytes(), self.csv_bytes)
+                if os.name == "posix":
+                    self.assertEqual(stat.S_IMODE(destination.stat().st_mode) & 0o077, 0)
+                    destination.chmod(0o640)
+                destination.write_bytes(b"prior,export\n")
+                export.main()
+            self.assertEqual(destination.read_bytes(), self.csv_bytes)
+            if os.name == "posix":
+                self.assertEqual(stat.S_IMODE(destination.stat().st_mode), 0o640)
+            self.assertEqual(list(directory.iterdir()), [destination])
+
+    def test_cli_close_failure_preserves_output(self):
+        @contextmanager
+        def failing_close(*args, **kwargs):
+            with NamedTemporaryFile(*args, **kwargs) as stream:
+                yield stream
+            raise OSError("synthetic close failure")
+
+        with TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            destination = directory / "weekly.csv"
+            destination.write_bytes(b"prior,export\n")
+            argv = [export.__file__, str(self.directory), "--output", str(destination)]
+            with patch.object(sys, "argv", argv), patch.object(
+                audit, "workbook", nesid_fixture
+            ), patch.object(audit, "verify_inputs"), patch.object(
+                export, "NamedTemporaryFile", failing_close
+            ):
+                with self.assertRaisesRegex(OSError, "synthetic close failure"):
+                    export.main()
+            self.assertEqual(destination.read_bytes(), b"prior,export\n")
+            self.assertEqual(list(directory.iterdir()), [destination])
+
+    @unittest.skipUnless(hasattr(os, "mkfifo"), "requires POSIX special files")
+    def test_cli_rejects_symlink_fifo_and_directory(self):
+        with TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            target = directory / "target.csv"
+            target.write_bytes(b"prior,export\n")
+            link = directory / "link.csv"
+            link.symlink_to(target)
+            fifo = directory / "fifo"
+            os.mkfifo(fifo)
+            folder = directory / "folder"
+            folder.mkdir()
+            for destination in (link, fifo, folder):
+                argv = [export.__file__, str(self.directory), "--output", str(destination)]
+                with self.subTest(destination=destination), patch.object(
+                    sys, "argv", argv
+                ), patch.object(audit, "workbook", nesid_fixture), patch.object(
+                    audit, "verify_inputs"
+                ):
+                    with self.assertRaisesRegex(
+                        ValueError, "output destination must be a regular file"
+                    ):
+                        export.main()
+            self.assertTrue(link.is_symlink())
+            self.assertEqual(target.read_bytes(), b"prior,export\n")
+            self.assertTrue(stat.S_ISFIFO(fifo.lstat().st_mode))
+            self.assertTrue(folder.is_dir())
+            self.assertEqual(set(directory.iterdir()), {target, link, fifo, folder})
 
 
 if __name__ == "__main__":
