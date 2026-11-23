@@ -6,7 +6,7 @@ import csv
 import hashlib
 import json
 import os
-import re
+import posixpath
 import shutil
 import sys
 import tempfile
@@ -16,11 +16,13 @@ from datetime import UTC, datetime
 from itertools import product
 from pathlib import Path
 from urllib.request import urlopen
+from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / "data/demographic-sources.toml"
 US_STATES = "us-states"
 US_CONTROL = "us-national-control"
+US_COUNTY_CONTROL = "us-county-control"
 YEARS = tuple(range(2013, 2020))
 ESTIMATE_FIELDS = tuple(f"POPESTIMATE{year}" for year in range(2010, 2020))
 COUNT_FIELDS = ("ESTIMATESBASE2010", *ESTIMATE_FIELDS, "CENSUS2020POP")
@@ -29,12 +31,15 @@ STATE_FIELDS = (
     "RACE", "AGE", *COUNT_FIELDS,
 )
 NATIONAL_FIELDS = ("SEX", "AGE", *COUNT_FIELDS)
+COUNTY_CONTROL_FIELDS = ("SUMLEV", "STATE", "COUNTY", "STNAME", "YEAR", "POPESTIMATE", "AGE04_TOT")
+COUNTY_YEAR_CODES = dict(zip(range(5, 12), YEARS, strict=True))
 OUTPUT_FIELDS = (
     "location_id", "location_name", "geography", "year", "reference_date",
     "population_total", "population_age_0_4", "share_age_0_4",
     "universe", "source_unit", "source_id", "source_table", "source_vintage",
-    "source_release_date", "source_sha256", "source_capture_method",
-    "control_source_sha256", "control_capture_method",
+    "source_release_date", "source_release_id", "source_sha256", "source_capture_method",
+    "control_source_sha256", "control_capture_method", "county_control_sha256",
+    "county_control_capture_method",
 )
 
 # Census ANSI state FIPS codes. Puerto Rico (72) has its own source.
@@ -58,6 +63,13 @@ NATIONAL_AGES = range(101)
 YOUNG_AGES = range(5)
 CENSUS_TOTAL_AGE = 999
 EXCEL_OLE = bytes.fromhex("d0 cf 11 e0 a1 b1 1a e1")
+PACKAGE_RELATIONSHIP = "{http://schemas.openxmlformats.org/package/2006/relationships}Relationship"
+DOCUMENT_RELATIONSHIPS = (
+    ("http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+     "http://schemas.openxmlformats.org/spreadsheetml/2006/main"),
+    ("http://purl.oclc.org/ooxml/officeDocument/relationships",
+     "http://purl.oclc.org/ooxml/spreadsheetml/main"),
+)
 
 
 def load_contract():
@@ -68,6 +80,9 @@ def load_contract():
     sources = {entry["id"]: entry for entry in contract["sources"]}
     if len(sources) != len(contract["sources"]):
         raise ValueError("duplicate source ID in demographic contract")
+    for source in sources.values():
+        if source["publisher"] == "us" and not source.get("release_id", "").strip():
+            raise ValueError(f"{source['id']}: missing explicit Census release ID")
     return contract, sources
 
 
@@ -82,12 +97,64 @@ def verify_pin(source, digest):
         raise ValueError(f"{source['id']}: SHA-256 disagrees with the source contract")
 
 
+def relationship_target(base, relationship):
+    target = relationship.attrib["Target"]
+    if target.startswith("/"):
+        return posixpath.normpath(target.lstrip("/"))
+    return posixpath.normpath(posixpath.join(base, target))
+
+
+def validate_xlsx(path):
+    with zipfile.ZipFile(path) as archive:
+        content_types = ElementTree.fromstring(archive.read("[Content_Types].xml"))
+        types_ns = "{http://schemas.openxmlformats.org/package/2006/content-types}"
+        overrides = {
+            entry.get("PartName"): entry.get("ContentType")
+            for entry in content_types.findall(f"{types_ns}Override")
+        }
+        roots = ElementTree.fromstring(archive.read("_rels/.rels"))
+        for relationship_ns, sheet_ns in DOCUMENT_RELATIONSHIPS:
+            main = roots.find(
+                f"{PACKAGE_RELATIONSHIP}[@Type='{relationship_ns}/officeDocument']"
+            )
+            if main is None or main.get("TargetMode") == "External":
+                continue
+            workbook = relationship_target("", main)
+            if overrides.get(f"/{workbook}") != (
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
+            ):
+                continue
+
+            workbook_root = ElementTree.fromstring(archive.read(workbook))
+            if workbook_root.tag != f"{{{sheet_ns}}}workbook":
+                continue
+            base, filename = posixpath.split(workbook)
+            rels = ElementTree.fromstring(archive.read(posixpath.join(base, "_rels", filename + ".rels")))
+            links = {link.get("Id"): link for link in rels.findall(PACKAGE_RELATIONSHIP)}
+            for sheet in workbook_root.findall(f"{{{sheet_ns}}}sheets/{{{sheet_ns}}}sheet"):
+                link = links.get(sheet.attrib[f"{{{relationship_ns}}}id"])
+                if (
+                    link is not None
+                    and link.get("TargetMode") != "External"
+                    and link.get("Type") == f"{relationship_ns}/worksheet"
+                ):
+                    with archive.open(relationship_target(base, link)) as worksheet:
+                        start = next(ElementTree.iterparse(worksheet, events=("start",)), None)
+                    if start is not None and start[1].tag == f"{{{sheet_ns}}}worksheet":
+                        return
+    raise ValueError("missing a linked SpreadsheetML worksheet")
+
+
 def validate_download_format(path, source):
     with path.open("rb") as stream:
         prefix = stream.read(4096)
-    if source["format"] == "spreadsheet":
-        if not prefix.startswith(EXCEL_OLE) and not zipfile.is_zipfile(path):
-            raise ValueError(f"{source['id']}: expected an Excel file or ZIP container")
+    if source["format"] in ("spreadsheet", "xlsx"):
+        if source["format"] == "spreadsheet" and prefix.startswith(EXCEL_OLE):
+            return
+        try:
+            validate_xlsx(path)
+        except (zipfile.BadZipFile, ElementTree.ParseError, KeyError, RuntimeError, ValueError) as error:
+            raise ValueError(f"{source['id']}: expected an XLSX workbook: {error}") from error
     elif source["format"] == "csv":
         text_prefix = prefix.removeprefix(b"\xef\xbb\xbf").lstrip()
         if not text_prefix or text_prefix.startswith((b"<", b"{", b"[")) or b"," not in prefix:
@@ -110,6 +177,7 @@ def verify_stage(cache_dir, source):
         or receipt["source_table"] != source["table"]
         or receipt["source_vintage"] != source["vintage"]
         or receipt["source_release_date"] != source["release_date"]
+        or receipt.get("source_release_id") != source.get("release_id")
         or receipt["capture_method"] not in ("download", "local_file")
     ):
         raise ValueError(f"{source['id']}: staged manifest disagrees with source contract")
@@ -117,6 +185,7 @@ def verify_stage(cache_dir, source):
     if digest != receipt["sha256"] or path.stat().st_size != receipt["bytes"]:
         raise ValueError(f"{source['id']}: staged file disagrees with manifest checksum or size")
     verify_pin(source, digest)
+    validate_download_format(path, source)
     return path, receipt
 
 
@@ -168,6 +237,7 @@ def stage_source(cache_dir, source, contract, from_file):
             "source_table": source["table"],
             "source_vintage": source["vintage"],
             "source_release_date": source["release_date"],
+            "source_release_id": source.get("release_id"),
             "source_unit": source["source_unit"],
             "source_format": source["format"],
             "role": source["role"],
@@ -188,15 +258,20 @@ def stage_source(cache_dir, source, contract, from_file):
     return receipt
 
 
-def read_source_csv(path, fields):
+def read_source_csv(path, fields, *, exact_header=True):
     with path.open(encoding="utf-8-sig", newline="") as stream:
         reader = csv.reader(stream, strict=True)
-        if tuple(next(reader, ())) != fields:
+        header = tuple(next(reader, ()))
+        if exact_header:
+            valid_header = header == fields
+        else:
+            valid_header = len(set(header)) == len(header) and set(fields).issubset(header)
+        if not valid_header:
             raise ValueError("CSV header does not match the documented file layout")
         for row in reader:
-            if len(row) != len(fields):
+            if len(row) != len(header):
                 raise ValueError(f"line {reader.line_num}: wrong number of CSV fields")
-            yield reader.line_num, dict(zip(fields, row, strict=True))
+            yield reader.line_num, dict(zip(header, row, strict=True))
 
 
 def unsigned_integer(value, label):
@@ -273,20 +348,64 @@ def read_national_control(path):
     return cells
 
 
-def build_states(cache_dir, output_path, contract, sources):
-    state_path, state_receipt = verify_stage(cache_dir, sources[US_STATES])
+def read_county_control(path):
+    county_years = {}
+    state_totals = {}
+    for line, row in read_source_csv(path, COUNTY_CONTROL_FIELDS, exact_header=False):
+        label = f"{US_COUNTY_CONTROL} line {line}"
+        state = unsigned_integer(row["STATE"], label)
+        county = unsigned_integer(row["COUNTY"], label)
+        if unsigned_integer(row["SUMLEV"], label) != 50 or state not in STATE_NAMES or not 1 <= county <= 999:
+            raise ValueError(f"{label}: unexpected county geography {row['SUMLEV']}/{state}/{county}")
+        if row["STNAME"] != STATE_NAMES[state]:
+            raise ValueError(f"{label}: state FIPS and name disagree")
+        year_code = unsigned_integer(row["YEAR"], label)
+        if not 1 <= year_code <= 12:
+            raise ValueError(f"{label}: unexpected Census year code {year_code}")
+        if year_code not in COUNTY_YEAR_CODES:
+            continue
+        year = COUNTY_YEAR_CODES[year_code]
+        years = county_years.setdefault((state, county), set())
+        if year in years:
+            raise ValueError(f"{label}: duplicate county-year {state}/{county}/{year}")
+        years.add(year)
+        total = unsigned_integer(row["POPESTIMATE"], f"{label}, POPESTIMATE")
+        young = unsigned_integer(row["AGE04_TOT"], f"{label}, AGE04_TOT")
+        if young > total:
+            raise ValueError(f"{label}: population ages 0–4 exceeds the all-age total")
+        previous_total, previous_young = state_totals.get((state, year), (0, 0))
+        state_totals[state, year] = (previous_total + total, previous_young + young)
+
+    for (state, county), years in county_years.items():
+        if len(years) != len(YEARS):
+            raise ValueError(f"{US_COUNTY_CONTROL}: county {state}/{county} does not cover every target year")
+    check_cells(state_totals, set(product(STATE_NAMES, YEARS)), US_COUNTY_CONTROL)
+    return state_totals
+
+
+def build_states(cache_dir, output_path, contract, sources, *, check_counties=False):
+    source = sources[US_STATES]
+    panel = contract["panels"][source["panel"]]
+    controls = [US_CONTROL, US_COUNTY_CONTROL] if check_counties else [US_CONTROL]
+    for control_id in controls:
+        control = sources[control_id]
+        if any(control[field] != source[field] for field in (
+            "panel", "publisher", "release_id", "release_date", "years", "source_unit",
+        )) or tuple(source["years"]) != YEARS:
+            raise ValueError(
+                f"{control_id}: state and control sources must cover the same explicit "
+                "Census release, period and units"
+            )
+    state_path, state_receipt = verify_stage(cache_dir, source)
     control_path, control_receipt = verify_stage(cache_dir, sources[US_CONTROL])
     cells = read_states(state_path)
     national = read_national_control(control_path)
-    source = sources[US_STATES]
-    panel = contract["panels"][source["panel"]]
-    if (
-        tuple(source["years"]) != YEARS
-        or sources[US_CONTROL]["years"] != source["years"]
-        or sources[US_CONTROL]["release_date"] != source["release_date"]
-        or sources[US_CONTROL]["source_unit"] != source["source_unit"]
-    ):
-        raise ValueError("state and national control sources must cover the same period, release and units")
+    if check_counties:
+        county_path, county_receipt = verify_stage(cache_dir, sources[US_COUNTY_CONTROL])
+        county_totals = read_county_control(county_path)
+    else:
+        county_receipt = {}
+        county_totals = None
 
     rows = []
     for index, year in enumerate(YEARS):
@@ -296,15 +415,21 @@ def build_states(cache_dir, output_path, contract, sources):
             young = sum(cells[state, race, age][index] for race, age in product(RACES, YOUNG_AGES))
             if total <= 0 or not 0 <= young <= total:
                 raise ValueError(f"{year} {name}: invalid total or population ages 0–4")
+            if county_totals is not None and (total, young) != county_totals[state, year]:
+                raise ValueError(
+                    f"{year} US-{state:02} {name}: state (all ages {total}, ages 0–4 {young}) "
+                    f"disagrees with county control {county_totals[state, year]}"
+                )
             state_total += total
             state_young += young
             rows.append((
                 f"US-{state:02}", name, panel["geography"], year,
                 f"{year}-{panel['reference_month_day']}", total, young, format(young / total, ".12g"),
                 panel["universe"], source["source_unit"], source["id"], source["table"],
-                source["vintage"], source["release_date"], state_receipt["sha256"],
+                source["vintage"], source["release_date"], source["release_id"], state_receipt["sha256"],
                 state_receipt["capture_method"], control_receipt["sha256"],
-                control_receipt["capture_method"],
+                control_receipt["capture_method"], county_receipt.get("sha256"),
+                county_receipt.get("capture_method"),
             ))
 
         national_total = national[CENSUS_TOTAL_AGE][index]
@@ -348,15 +473,23 @@ def main():
     stage.add_argument("--from-file", type=Path, help="stage local bytes without claiming retrieval")
     build = commands.add_parser("build-us", help="validate and build the US states/DC CSV")
     build.add_argument("--output", type=Path, default=ROOT / "data/processed/demography/us-states.csv")
+    build.add_argument(
+        "--check-counties", action="store_true",
+        help="also compare each state/DC row to the staged US county file",
+    )
     args = parser.parse_args()
 
     if args.command == "stage":
-        receipt = stage_source(args.cache_dir, sources[args.source], contract, args.from_file)
-        pin_status = "upstream digest pinned" if receipt["expected_sha256"] else "upstream digest unpinned"
+        source = sources[args.source]
+        receipt = stage_source(args.cache_dir, source, contract, args.from_file)
+        pin_status = "upstream digest pinned" if source.get("expected_sha256") else "upstream digest unpinned"
         print(f"{args.source}: {receipt['sha256']} ({receipt['capture_method']}, {pin_status})")
     else:
-        count = build_states(args.cache_dir, args.output, contract, sources)
-        print(f"{count} rows written to {args.output}; state sums match the staged national control")
+        count = build_states(args.cache_dir, args.output, contract, sources, check_counties=args.check_counties)
+        checks = "state sums match the staged national control"
+        if args.check_counties:
+            checks += " and each state/DC row matches its staged county sum"
+        print(f"{count} rows written to {args.output}; {checks}")
 
 
 if __name__ == "__main__":
