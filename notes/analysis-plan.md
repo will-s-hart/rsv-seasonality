@@ -52,3 +52,7 @@ A first substantive result should explain what a shared or partially pooled clim
 - **Will:** audit official Japan IDWR and US NREVSS definitions, reporting changes, age composition, and the minimum observation assumptions needed for joint inference.
 - **Torkel:** prototype `climate_response(parameters, weather, context)` and the differentiable daily renewal recursion; compare an unrestricted joint response with one small behaviour-informed architecture on synthetic two-country data.
 - **Joint:** fix the first regions, behavioural hypotheses, baseline period, held-out design, and recovery criteria before fitting real outcomes.
+
+### Natality source audit
+
+The [2013–2019 natality catalogue and validation contract](natality-sources-2013-2019.md) covers Japan prefectures and US states/DC. Synthetic extracts exercise the validator. Will's next step is to acquire and checksum the official files, verify the Japan table vintages and residence buckets, and run the coverage and reconciliation checks on the official counts. Monthly territory coverage remains open.
