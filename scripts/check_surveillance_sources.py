@@ -16,6 +16,8 @@ from unicodedata import normalize
 YEARS = range(2013, 2020)
 NESID_TABLES = ("8-1", "8-2", "12-1", "14-1")
 CDC_EXPORT = "nrevss.csv"
+NREVSS_METHODS = ("PCR", "Antigen")
+HHS_REGIONS = range(1, 11)
 MANIFEST = Path(__file__).with_name("surveillance_sources.sha256")
 RSV = "ＲＳウイルス感染症"
 PEDIATRIC = "小児科定点"
@@ -220,22 +222,43 @@ def rsv_column(rows):
     return columns[0] if columns else None
 
 
+def read_nesid_sites(directory, year):
+    first_start, _ = japan_week_dates(year, 1)
+    next_start, _ = japan_week_dates(year + 1, 1)
+    weeks = (next_start - first_start).days // 7
+    with workbook(directory, year, "14-1") as (_, read_sites):
+        sites = read_sites(PEDIATRIC, 53)
+    # The English subtitle for 2015 week 53 repeats "week 52".
+    site_weeks = [
+        int(re.match(r"(\d+)週", normalize("NFKC", label))[1])
+        for label in sites[4][3:] if label
+    ]
+    require(site_weeks == list(range(1, weeks + 1)), f"{year} sentinel week labels")
+    check_areas(sites[5:53], f"{year} sentinel")
+    return weeks, sites
+
+
+def nesid_week_counts(year, weeks, sites, names, read_cases):
+    require(names[0] == TOTAL, f"{year} sheet names")
+    sheet_weeks = [int(normalize("NFKC", name).removesuffix("週")) for name in names[1:]]
+    require(sheet_weeks == list(range(1, weeks + 1)), f"{year} case week labels")
+    for week, name in zip(sheet_weeks, names[1:]):
+        label = f"{year} week {week}"
+        cases = read_cases(name, 54)
+        column = rsv_column(cases)
+        require(column is not None, f"{label} RSV header")
+        check_areas(cases[6:54], f"{label} cases")
+        counts = integer_counts([row[column] for row in cases[6:54]], label)
+        denominators = integer_counts([row[week + 2] for row in sites[5:53]], label, 1)
+        require(counts[0] == sum(counts[1:]), f"{label} national case sum")
+        require(denominators[0] == sum(denominators[1:]), f"{label} national site sum")
+        yield week, name, counts, denominators
+
+
 def check_nesid(directory):
     print("NESID year weeks cases zero_case_prefecture_weeks national_site_range under_2_pct")
     for year in YEARS:
-        first_start, _ = japan_week_dates(year, 1)
-        next_start, _ = japan_week_dates(year + 1, 1)
-        weeks = (next_start - first_start).days // 7
-        with workbook(directory, year, "14-1") as (_, read_sites):
-            sites = read_sites(PEDIATRIC, 53)
-        # The English subtitle for 2015 week 53 repeats "week 52".
-        site_weeks = [
-            int(re.match(r"(\d+)週", normalize("NFKC", label))[1])
-            for label in sites[4][3:] if label
-        ]
-        require(site_weeks == list(range(1, weeks + 1)), f"{year} sentinel week labels")
-        check_areas(sites[5:53], f"{year} sentinel")
-
+        weeks, sites = read_nesid_sites(directory, year)
         with workbook(directory, year, "12-1") as (_, read_ages):
             ages = read_ages(RSV, 55)
         check_areas(ages[7:55], f"{year} age")
@@ -247,19 +270,11 @@ def check_nesid(directory):
         with workbook(directory, year, "8-1") as (names, read_cases), workbook(
             directory, year, "8-2"
         ) as (rate_names, read_rates):
-            require(names == rate_names and names[0] == TOTAL, f"{year} sheet names")
-            sheet_weeks = [int(normalize("NFKC", name).removesuffix("週")) for name in names[1:]]
-            require(sheet_weeks == list(range(1, weeks + 1)), f"{year} case week labels")
-            for week, name in zip(sheet_weeks, names[1:]):
+            require(names == rate_names, f"{year} sheet names")
+            for week, name, counts, denominators in nesid_week_counts(
+                year, weeks, sites, names, read_cases
+            ):
                 label = f"{year} week {week}"
-                cases = read_cases(name, 54)
-                column = rsv_column(cases)
-                require(column is not None, f"{label} RSV header")
-                check_areas(cases[6:54], f"{label} cases")
-                counts = integer_counts([row[column] for row in cases[6:54]], label)
-                denominators = integer_counts([row[week + 2] for row in sites[5:53]], label, 1)
-                require(counts[0] == sum(counts[1:]), f"{label} national case sum")
-                require(denominators[0] == sum(denominators[1:]), f"{label} national site sum")
                 annual.update(dict(zip(NESID_AREAS, counts)))
                 zeros += counts[1:].count(0)
                 national_sites.append(denominators[0])
@@ -292,16 +307,19 @@ def check_nesid(directory):
         print(year, weeks, national_total, zeros, site_range, f"{under_two:.1%}")
 
 
-def check_nrevss(directory):
+def nrevss_week_ends():
     # Independent expected grid from CDC's MMWR week calendar.
     first = mmwr_year_start(YEARS.start) + timedelta(days=6)
     last = mmwr_year_start(YEARS.stop) - timedelta(days=1)
-    weeks = {first + timedelta(days=day) for day in range(0, (last - first).days + 1, 7)}
-    methods = ("PCR", "Antigen")
-    groups = {(method, region): {} for method in methods for region in range(1, 11)}
+    return tuple(first + timedelta(days=day) for day in range(0, (last - first).days + 1, 7))
+
+
+def read_nrevss(directory):
+    weeks = set(nrevss_week_ends())
+    groups = {(method, region): {} for method in NREVSS_METHODS for region in HHS_REGIONS}
+    region_codes = {str(region): region for region in HHS_REGIONS}
     codes = {}
     export_rows = Counter()
-    annual_tests = Counter()
     with (directory / CDC_EXPORT).open(newline="", encoding="utf-8") as stream:
         for row in csv.DictReader(stream):
             method = row["testtype"]
@@ -315,25 +333,37 @@ def check_nrevss(directory):
             code = row["repweekcode"]
             expected = mmwr_week_code(week_end)
             require(code == expected, f"{raw_date}: expected MMWR week code {expected}, got {code!r}")
-            if not first <= week_end <= last:
+            region = region_codes.get(row["hhs_region"])
+            group = method, region
+            if week_end not in weeks or group not in groups:
                 continue
-            group = (method, int(row["hhs_region"]))
             label = f"{group} {week_end}"
-            require(week_end in weeks and week_end not in groups[group], f"{label} invalid or duplicate week")
+            require(week_end not in groups[group], f"{label} invalid or duplicate week")
             codes[week_end] = code
             positive, tested, outlier = (int(row[field]) for field in ("rsvpos", "rsvtest", "outlier"))
             require(0 <= positive <= tested and outlier in (0, 1), f"{label} invalid counts or flag")
             groups[group][week_end] = positive, tested, outlier
-            annual_tests[method, week_end.year] += tested
+    for region in HHS_REGIONS:
+        pcr = groups["PCR", region]
+        require(
+            pcr.keys() == weeks and all(tested > 0 for _, tested, _ in pcr.values()),
+            f"PCR region {region} incomplete coverage",
+        )
+    return groups, codes, export_rows
 
+
+def check_nrevss(directory):
+    groups, codes, export_rows = read_nrevss(directory)
+    weeks = set(nrevss_week_ends())
+    annual_tests = Counter()
     print("NREVSS export rows", dict(export_rows))
     print("NREVSS method region rows missing zero_tests zero_positive_with_tests flagged min_tests max_tests")
     for (method, region), observations in groups.items():
         missing = sorted(weeks - observations.keys())
         empty = sorted(week for week, (_, tests, _) in observations.items() if tests == 0)
-        if method == "PCR":
-            require(not missing and not empty, f"PCR region {region} incomplete coverage")
         tests = [tested for _, tested, _ in observations.values()]
+        for day, (_, tested, _) in observations.items():
+            annual_tests[method, day.year] += tested
         zero_positive = sum(p == 0 and n > 0 for p, n, _ in observations.values())
         flags = sum(flag for _, _, flag in observations.values())
         print(
@@ -344,7 +374,7 @@ def check_nrevss(directory):
             print("  missing week endings:", ", ".join(day.isoformat() for day in missing))
         if empty:
             print("  zero-test week endings:", ", ".join(day.isoformat() for day in empty))
-    for method in methods:
+    for method in NREVSS_METHODS:
         print(method, "reported tests by year of week ending", {
             year: annual_tests[method, year] for year in YEARS
         })

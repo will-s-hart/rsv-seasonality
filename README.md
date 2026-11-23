@@ -8,6 +8,7 @@ The initial analysis will jointly model Japan and winter-dominant regions of the
 
 - [Literature review](notes/literature-review.md)
 - [Data sources and feasibility](notes/data-sources.md)
+- [Weekly RSV observation export for Japan and the US](notes/weekly-observations-2013-2019.md)
 - [Tentative modelling methodology](notes/modelling-methodology.md)
 - [Analysis plan and Will/Torkel responsibilities](notes/analysis-plan.md)
 - [UDE types considered for integrating several datasets](notes/ude-types-considered.md)
