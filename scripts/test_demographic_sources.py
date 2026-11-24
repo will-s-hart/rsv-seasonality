@@ -69,7 +69,7 @@ def county_rows():
             year_offset = code - 1
             total = 86 * state_offset + 6 * 3655 * year_offset
             young = 5 * state_offset + 60 * year_offset
-            yield ["050", state, "001", name, "First county", code, total - 100, young - 10]
+            yield ["050", state, "001", name, "Peña County", code, total - 100, young - 10]
             yield ["050", state, "003", name, "Second county", code, 100, 10]
 
 
@@ -143,7 +143,7 @@ class DemographicCLITest(unittest.TestCase):
         self.stage(self.control, "us-national-control")
 
     def stage_counties(self, rows=None):
-        with self.counties.open("w", encoding="utf-8", newline="") as stream:
+        with self.counties.open("w", encoding="cp1252", newline="") as stream:
             writer = csv.writer(stream)
             writer.writerow(COUNTY_HEADER)
             writer.writerows(county_rows() if rows is None else rows)

@@ -44,7 +44,9 @@ Run `stage --help` for the remaining source IDs. The `stage` command also accept
 
 The build rechecks staged digests, checks the published layouts, and validates age and geography coverage and the national controls before atomically writing `data/processed/demography/us-states.csv`. The CSV contains year, date, geography (`US-xx`, two-digit FIPS), name, counts in persons, a fraction for ages 0–4, universe, vintage, release date and ID, and input digests and capture methods. A build without `--check-counties` leaves the county provenance fields blank and establishes only national aggregate agreement. Raw and processed data live in Git-ignored directories.
 
-In the Cloud environment, official e-Stat and Census downloads returned proxy `403`. The current verification establishes the source metadata and CLI behaviour on generated fixtures. The Census parsers assume UTF-8 and the published geographic and year codes. On department, stage the original state, national, and county CSVs. Verify the files' encoding, geography and July 1 labels, run `build-us --check-counties`, and compare NY, NJ and DC directly with their same-release age-by-sex tables. Record the actual row counts and reconcile any discrepancies before pinning the digests. Complete the prefecture and Puerto Rico checks described above before using those panels.
+The synthetic fixtures exercise the builders and their rejection checks. On department, the three official Census CSVs were staged with local SHA-256 receipts. The state and national files decoded as UTF-8, while the county file contained a legacy-encoded byte in Doña Ana County and is read as Windows-1252. The staged inputs passed `build-us --check-counties`, producing 357 state/DC–year rows and matching both the national and county controls for July 1, 2013–2019.
+
+Will's remaining US checks are to compare NY, NJ and DC directly with their same-release age-by-sex tables and lock the input manifest for analysis. Official e-Stat downloads returned proxy `403` in the Cloud environment. Complete acquisition and the workbook and reconciliation checks for Japan and Puerto Rico before using those panels.
 
 ## Natality follow-up
 

@@ -38,7 +38,7 @@ Freeze climate transformations, train-only scaling, lag choices, input vintages,
 
 ### Annual demographics
 
-The [2013–2019 source contract and workflow](demographic-sources-2013-2019.md) covers resident totals and ages 0–4. The US states/DC build and its national and county-based checks pass with synthetic fixtures. The Cloud environment blocks official downloads. Will's next step is to acquire the official files, run both US checks, and verify the Japan and Puerto Rico file layouts and counts before pinning the inputs. Natality remains a separate source audit.
+The [2013–2019 source contract and workflow](demographic-sources-2013-2019.md) covers resident totals and ages 0–4. Synthetic fixtures exercise the US states/DC build and its controls. The 357-row build reconciled with the national and county totals from the three official Census CSVs staged on department. Will's next step is to check NY, NJ and DC against their same-release age-by-sex tables and verify the Japan and Puerto Rico file layouts and counts before locking the analysis inputs. Natality remains a separate source audit.
 
 ## Comparisons and interpretation
 

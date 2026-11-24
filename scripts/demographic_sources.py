@@ -258,8 +258,8 @@ def stage_source(cache_dir, source, contract, from_file):
     return receipt
 
 
-def read_source_csv(path, fields, *, exact_header=True):
-    with path.open(encoding="utf-8-sig", newline="") as stream:
+def read_source_csv(path, fields, *, encoding="utf-8-sig", exact_header=True):
+    with path.open(encoding=encoding, newline="") as stream:
         reader = csv.reader(stream, strict=True)
         header = tuple(next(reader, ()))
         if exact_header:
@@ -351,7 +351,9 @@ def read_national_control(path):
 def read_county_control(path):
     county_years = {}
     state_totals = {}
-    for line, row in read_source_csv(path, COUNTY_CONTROL_FIELDS, exact_header=False):
+    for line, row in read_source_csv(
+        path, COUNTY_CONTROL_FIELDS, encoding="cp1252", exact_header=False,
+    ):
         label = f"{US_COUNTY_CONTROL} line {line}"
         state = unsigned_integer(row["STATE"], label)
         county = unsigned_integer(row["COUNTY"], label)
