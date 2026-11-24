@@ -202,4 +202,17 @@ end
         @test_throws ArgumentError BinomialPositivity(too_close)
         @test_throws ArgumentError BetaBinomialPositivity(too_close, 2)
     end
+    setprecision(BigFloat, 32) do
+        @test_throws ArgumentError BetaBinomialPositivity(prevfloat(1.0), BigFloat(2))
+    end
+
+    precise_models = setprecision(BigFloat, 256) do
+        p = 1 - BigFloat(2)^(-200)
+        (BinomialPositivity(p), BetaBinomialPositivity(p, 2))
+    end
+    setprecision(BigFloat, 128) do
+        for model in precise_models
+            @test observation_loglikelihood(one_negative, model) ≈ -200 * log(BigFloat(2))
+        end
+    end
 end

@@ -128,8 +128,13 @@ function _probability_float(p::Real)
     probability = _parameter_float(p)
     if 0 < p < 1 && !(0 < probability < 1)
         probability = BigFloat(p)
-        0 < probability < 1 ||
-            throw(ArgumentError("an interior probability rounded to a boundary; supply higher precision"))
+    end
+    return _require_probability_support(p, probability)
+end
+
+function _require_probability_support(p, probability)
+    if 0 < p < 1 && !(0 < probability < 1)
+        throw(ArgumentError("an interior probability rounded to a boundary; supply higher precision"))
     end
     return probability
 end
@@ -195,6 +200,7 @@ struct BetaBinomialPositivity{T<:AbstractFloat}
     function BetaBinomialPositivity(p::Real, concentration::Real)
         probability, shape = promote(_probability_float(p),
                                      _parameter_float(_positive_dispersion(concentration)))
+        _require_probability_support(p, probability)
         _positive_dispersion(shape)
         return new{typeof(probability)}(probability, shape)
     end
@@ -265,9 +271,13 @@ function _logchoose(successes, failures, p)
     return sum(i -> log1p(oftype(p, larger) / i), 1:smaller; init=zero(p))
 end
 
+# Subtract directly near one so unary negation cannot round a wider BigFloat
+# operand before its complement is formed at the working precision.
+_log_complement(p) = p > 0.5 ? log(one(p) - p) : log1p(-p)
+
 function _test_logmass(successes, failures, model::BinomialPositivity)
     p = model.p
-    return _logchoose(successes, failures, p) + successes * log(p) + failures * log1p(-p)
+    return _logchoose(successes, failures, p) + successes * log(p) + failures * _log_complement(p)
 end
 
 _softplus(x) = max(x, zero(x)) + log1p(exp(-abs(x)))
@@ -277,7 +287,7 @@ function _test_logmass(successes, failures, model::BetaBinomialPositivity)
     p = model.p
     log_concentration = log(model.concentration)
     log_alpha = log(p) + log_concentration
-    log_beta = log1p(-p) + log_concentration
+    log_beta = _log_complement(p) + log_concentration
 
     # Factor the probability of one order (successes followed by failures) into
     # conditional probabilities, then count the orders. Use log weights so
