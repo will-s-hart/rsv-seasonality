@@ -36,6 +36,10 @@ Both review each other's core acquisition/model code. Meet weekly around one dia
 
 Freeze climate transformations, train-only scaling, lag choices, input vintages, outcome likelihoods, and tuning budgets before final evaluation. Large US regions require a spatial-aggregation sensitivity check: average local climate response values versus responding to region-average weather, with explicit assumptions about mixing.
 
+### Annual demographics
+
+The [2013–2019 source contract and workflow](demographic-sources-2013-2019.md) covers resident totals and ages 0–4. Synthetic fixtures exercise the US states/DC build and its controls. The 357-row build reconciled with the national and county totals from the three official Census CSVs staged on department. Will's next step is to check NY, NJ and DC against their same-release age-by-sex tables and verify the Japan and Puerto Rico file layouts and counts before locking the analysis inputs. Natality remains a separate source audit.
+
 ## Comparisons and interpretation
 
 - Compare simple climate curves and splines against the main joint neural response and a behaviour-informed response with a learned low-amplification region. Include a calendar-forcing reference within the same renewal backbone. Test temperature–humidity interactions and modest adaptation shifts; do not require a double peak in every country.
