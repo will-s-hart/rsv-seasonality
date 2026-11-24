@@ -40,6 +40,25 @@ Use the NB2 convention `Var(Y) = mu + mu^2 / phi`. Observation-specific delays d
 
 Positivity needs positive and tested counts with a binomial/beta-binomial observation model and assumptions about selection into testing, including non-RSV illness where relevant. Denominators help quantify testing but do not identify infection attack rates. Use source-specific observation models, including age composition where possible: paediatric sentinel consultations and all-age laboratory detections are not interchangeable. Choose a second country with usable observations before joint empirical fitting; unresolved access should trigger a different comparator, not a single-country primary analysis.
 
+### Aggregate observation interface
+
+The Julia package evaluates one weekly surveillance observation at a time. The constructors and likelihood parameters are exercised with synthetic fixtures.
+
+- **Japan NESID.** `JapanObservation(cases, SentinelSites(network_sites, reporting))` stores the final table's reported paediatric case count and its paediatric sentinel network size in clinics and hospitals. Each site may account for multiple cases. The network size does not measure weekly RSV test volume, RSV reporting participation, or the catchment population. Track separately verified participation as `ReportingComplete` or `ReportingIncomplete`. Use `ReportingUnknown` with the published weekly network size alone. Preserve unavailable counts as `missing`. Any present case count, including zero, can be scored at the caller's expected reported count. [Weekly export and source definitions](weekly-observations-2013-2019.md#columns).
+- **US NREVSS.** `USObservation(method, positives, ReportedTests(method, tests); source_outlier)` uses the actual reported tests from the same method, `PCR` or `Antigen`. The three coverage states are `AbsentWeek` (missing response and denominator), `ZeroTestWeek` (source row with zero tests and zero detections), and `TestedWeek` (positive test denominator). The source outlier flag is independent metadata. Weekly lab participation is unavailable in the export. `observed_positivity` is the observed fraction for a tested week, including an observed zero, and returns `missing` otherwise. [Weekly export and source definitions](weekly-observations-2013-2019.md#columns).
+
+`observation_loglikelihood` returns a natural log probability or `missing` for an absent Japan response or a US week without reported tests. Parameter choices are explicit:
+
+| Likelihood | Parameters and limits |
+| --- | --- |
+| `NB2(mu, phi)` | `mu` is the finite, nonnegative expected number of **reported cases** for the observation week. The dimensionless shape `phi` is finite and strictly positive. The variance is `mu + mu^2 / phi`. Zero mean puts all mass on zero. The Poisson distribution is the limit as `phi` increases without bound. |
+| `BinomialPositivity(p)` | `p` is the probability of a positive result among the reported tests of the given method, in the closed interval [0, 1]. With `n` tests, the mean is `n*p` and the variance is `n*p*(1-p)`. |
+| `BetaBinomialPositivity(p, concentration)` | The beta mixing shapes are `p*concentration` and `(1-p)*concentration` for interior `p`. The dimensionless concentration is finite and strictly positive. The mean is `n*p` and the variance is `n*p*(1-p)*(1 + (n-1)/(1+concentration))`. The binomial is the limit as concentration increases without bound. |
+
+Both positivity likelihoods use point masses at `p=0` and `p=1`. A probability strictly between those endpoints must remain interior at the evaluation precision. The log probability of an impossible outcome is `-Inf`. Log-mass evaluation uses sums of log factors, with work proportional to the reported count for NB2, the smaller of positive and negative counts for binomial, and the test count for beta-binomial.
+
+The Japan count likelihood optionally accepts `coverage_adjustment=(obs, mu) -> adjusted_mu`. A caller can use a concrete coverage scenario to supply a finite, nonnegative expected reported count in the same units. The hook receives the stored network size and reporting status, changes the expected count only, and runs only for an observed response. With no hook, the supplied mean is used directly for the reported count. A scientific rule for adjusting the mean from site or reporting information, treatment of unknown or incomplete reporting, and screening of US coverage or source flags remain analysis decisions. The responses describe surveillance activity. Population incidence and attack rates require external information.
+
 ## Climate response and comparators
 
 Fit the same observation and susceptibility backbone with a staged response family:

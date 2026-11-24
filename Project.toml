@@ -2,5 +2,11 @@ name = "RSVSeasonality"
 uuid = "1b350aeb-772f-4e45-8f68-d9c72b4e3d59"
 version = "0.1.0"
 
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
+
 [compat]
 julia = "1.10"

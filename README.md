@@ -18,13 +18,14 @@ These are provisional research notes dated 18 November 2026. No empirical models
 
 ## Julia setup
 
-The skeleton targets Julia 1.10 or later and currently has no external dependencies. It has been checked locally on Julia 1.11.2.
+The package targets Julia 1.10 or later and currently has no external dependencies. It has been checked locally on Julia 1.11.2.
 
 ```sh
 julia --startup-file=no --project=. scripts/check_setup.jl
+julia --startup-file=no --project=. test/runtests.jl
 ```
 
-`src/RSVSeasonality.jl` is the package entry point. Add dependencies and substantive modelling code as the design becomes concrete. Commit the generated `Manifest.toml` when establishing the first analysis environment; retain exact versions and random seeds for reported results.
+`src/RSVSeasonality.jl` is the package entry point. See the [aggregate observation interface](notes/modelling-methodology.md#aggregate-observation-interface) for the synthetic likelihood API. Add dependencies and substantive modelling code as the design becomes concrete. Commit the generated `Manifest.toml` when establishing the first analysis environment; retain exact versions and random seeds for reported results.
 
 ## Layout
 
@@ -35,6 +36,6 @@ julia --startup-file=no --project=. scripts/check_setup.jl
 | `scripts/` | Reproducible command-line entry points |
 | `data/` | Data conventions and local raw/processed data, excluded from Git |
 | `results/` | Local generated figures, tables, and fitted objects, excluded from Git |
-| `.github/workflows/` | Julia package-loading smoke check and synthetic Python fixtures |
+| `.github/workflows/` | Julia package-loading smoke check and synthetic Julia and Python fixtures |
 
 For each downloaded dataset, record provenance, access date, source version, licence, units, and a checksum before using it. Data redistribution remains subject to the original provider's terms; the repository licence covers original project material only.
