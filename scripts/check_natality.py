@@ -100,7 +100,23 @@ def read_us_annual_controls(path, sources):
     return controls
 
 
-def validate(path, country, manifest, reference_path, confirm_japan_control_scope):
+def read_us_monthly_controls(path, sources):
+    header = ["year", "month", "births", "report_url"]
+    controls = {}
+    for line, (year, month, value, url) in read_rows(path, header):
+        key = (year, month)
+        if year not in sources or month not in MONTHS or key in controls:
+            raise ValueError(f"{line}: unexpected or duplicate US national month {key}")
+        if url != sources[year]["monthly_report_url"]:
+            raise ValueError(f"{line}: US monthly control report URL differs from the manifest")
+        (controls[key],) = parse_counts((value,), line)
+    missing = sorted((year, month) for year in sources for month in MONTHS if (year, month) not in controls)
+    if missing:
+        raise ValueError(f"{path}: missing {len(missing)} US national monthly controls, first is {missing[0]}")
+    return controls
+
+
+def validate(path, country, manifest, reference_path, confirm_japan_control_scope, monthly_reference=None):
     japan = country == "japan"
     geography = PREFECTURES if japan else STATES_AND_DC
     measures = ("births", "male", "female") if japan else ("births",)
@@ -113,6 +129,9 @@ def validate(path, country, manifest, reference_path, confirm_japan_control_scop
         state_controls = read_us_annual_controls(reference_path, controls)
         locations_by_year = dict.fromkeys(controls, expected_locations)
     counts = read_counts(path, locations_by_year, measures)
+    monthly_controls = (
+        read_us_monthly_controls(monthly_reference, controls) if monthly_reference is not None else {}
+    )
 
     for year, control in controls.items():
         locations = locations_by_year[year]
@@ -149,6 +168,15 @@ def validate(path, country, manifest, reference_path, confirm_japan_control_scop
             if annual_births != published:
                 raise ValueError(f"{year}: annual national births {annual_births}, published {published}")
 
+        if monthly_controls:
+            for month in MONTHS:
+                births = counts[year, month, "national"][0]
+                published = monthly_controls[year, month]
+                if births != published:
+                    raise ValueError(
+                        f"{year} {month}: national births {births}, independent monthly control {published}"
+                    )
+
         if not japan:
             for location in components:
                 annual_births = counts[year, "annual", location][0]
@@ -169,13 +197,20 @@ def main():
     parser.add_argument("--japan-residence-contract", type=Path, help="Japan vintage and bucket CSV")
     parser.add_argument("--us-annual-controls", type=Path, help="independent US annual state/DC CSV")
     parser.add_argument(
+        "--us-national-month-controls", type=Path, help="independent NCHS US national monthly CSV"
+    )
+    parser.add_argument(
         "--confirm-japan-control-scope",
         action="store_true",
         help="apply MHLW national controls after independently matching the source scope and vintage",
     )
     args = parser.parse_args()
     if args.country == "japan":
-        if args.japan_residence_contract is None or args.us_annual_controls is not None:
+        if (
+            args.japan_residence_contract is None
+            or args.us_annual_controls is not None
+            or args.us_national_month_controls is not None
+        ):
             parser.error("japan requires --japan-residence-contract and accepts only Japan options")
         reference_path = args.japan_residence_contract
     else:
@@ -190,11 +225,14 @@ def main():
         with MANIFEST.open("rb") as stream:
             manifest = tomllib.load(stream)
         months = validate(
-            args.extract, args.country, manifest, reference_path, args.confirm_japan_control_scope
+            args.extract, args.country, manifest, reference_path, args.confirm_japan_control_scope,
+            args.us_national_month_controls,
         )
     except (OSError, ValueError, csv.Error) as error:
         parser.exit(1, f"{parser.prog}: {error}\n")
     print(f"Validated normalized {args.country} extract with {months:,} subnational months.")
+    if args.us_national_month_controls is not None:
+        print(f"Matched {len(manifest['us']['years']) * len(MONTHS)} independent NCHS national months.")
     if args.country == "japan" and not args.confirm_japan_control_scope:
         print("Published MHLW national controls are pending source vintage and scope confirmation.")
 

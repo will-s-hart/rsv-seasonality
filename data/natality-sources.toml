@@ -2,23 +2,23 @@ baseline_start = 2013
 baseline_end = 2019
 units = "live births"
 period = "calendar month of birth"
+audit_as_of = 2026-11-24
 
 [japan]
 publisher = "Ministry of Health, Labour and Welfare, via e-Stat"
 series = "Vital Statistics of Japan, final natality, Volume 2 Table 2"
-residence = "Child's address in official prefecture birth tabulations. Confirm each monthly Table 2 file's footnotes at acquisition."
+residence = "Child's address in the official prefecture birth tabulations"
 residence_method_url = "https://www.mhlw.go.jp/toukei/saikin/hw/jinkou/houkoku17/dl/03.pdf"
 universe = "Main final tables for Japanese vital events in Japan"
-format = "CSV (catalogue)"
+format = "CP932 CSV"
 catalogue_url_template = "https://www.e-stat.go.jp/en/stat-search/files?stat_infid={id}&layout=datalist"
 download_url_template = "https://www.e-stat.go.jp/stat-search/file-download?fileKind=1&statInfId={id}"
 archive_notice_url = "https://www.mhlw.go.jp/toukei/saikin/hw/jinkou/kakutei17/index.html"
 terms_url = "https://www.e-stat.go.jp/en/terms-of-use"
-national_control_url = "https://www.mhlw.go.jp/english/database/db-hw/dl/81-1a2en.pdf"
-national_control_crosscheck_url = "https://www.mhlw.go.jp/toukei/saikin/hw/jinkou/kakutei19/dl/04_h2-1.pdf"
-national_control_status = "Compare after confirming the Table 2 file vintage and scope"
+national_control_url = "https://www.mhlw.go.jp/toukei/saikin/hw/jinkou/kakutei19/dl/04_h2-1.pdf"
+national_control_status = "Matched all seven Table 2 national totals to the revised MHLW 2019 summary Table 2-1"
 prefecture_annual_control_url = "https://www.e-stat.go.jp/dbview?sid=0003411597"
-prefecture_annual_control_status = "Candidate comparison with final Table 4-3 birth counts after matching revision, universe and vintage"
+prefecture_annual_control_status = "Matched all 329 prefecture-years to the counts-only final Table 4-3 sibling identified for each release below"
 expected_prefecture_year_controls = 329
 expected_prefecture_months = 3948
 
@@ -26,49 +26,77 @@ expected_prefecture_months = 3948
 stat_infid = "000027231494"
 catalogue_updated = 2021-04-20
 national_births = 1029817
+sha256 = "15efbda2d2065c23208af39da84154f7add7065980c020f9e23d910cb1e9607f"
+table43_stat_infid = "000027231405"
+table43_sha256 = "be1cc4ce8a2a71429d5d48af0d9a48d05709a825d17975e65bf244f0bbeddf74"
 
 [japan.years.2014]
 stat_infid = "000031288423"
 catalogue_updated = 2021-04-20
 national_births = 1003609
+sha256 = "cd62da98810cbc4967d6f7f2b88baff4b554195386dd3acfd71ad7135972dd9a"
+table43_stat_infid = "000031288385"
+table43_sha256 = "04db56f1c7782a358bd82ea62556bc55d7b9d319343335a673329e75474781af"
 
 [japan.years.2015]
 stat_infid = "000032018395"
 catalogue_updated = 2021-03-31
 national_births = 1005721
+sha256 = "df977a0a7e4d2bb0d052021cc6e7ae8b655192fddfc4b7dd54152c32e43f7b77"
+table43_stat_infid = "000032018217"
+table43_sha256 = "471e7cc417a5c195cac90d210ca22c502eefc35662011a552339c2afa6c297a8"
 
 [japan.years.2016]
 stat_infid = "000032018686"
 catalogue_updated = 2021-03-31
 national_births = 977242
+sha256 = "62c34f90c8bae02bffd773ba6f97c21e3dd93200320ace6a007c02bbbf7fe879"
+table43_stat_infid = "000032018648"
+table43_sha256 = "2a5f67d32405cdf3a0b76af1b7711964841421a67ff0441bb3b074efd12d0125"
 
 [japan.years.2017]
 stat_infid = "000032019031"
 catalogue_updated = 2021-03-31
 national_births = 946146
+sha256 = "8cc456f4b95c94c4192137c4f5f27396b7eafd4a0ecb6d7e5607ec87f4a7cc6a"
+table43_stat_infid = "000032018993"
+table43_sha256 = "c4a2ceb9415a76eef285e44e1ff1b47fdfb1058ad460a0f5d36d57a24a15cc23"
 
 [japan.years.2018]
 stat_infid = "000031881344"
 catalogue_updated = 2019-11-28
 national_births = 918400
+sha256 = "bfe96ceae7b1386510ef22400f29af95c3a8814a682cc9d4188572dfb705fb6f"
+table43_stat_infid = "000031881306"
+table43_sha256 = "fa809289e1d268d80eb539a576d096644175e7927f54eaa952ae20cd27aed8ed"
 
 [japan.years.2019]
 stat_infid = "000031981544"
 catalogue_updated = 2020-09-17
 national_births = 865239
+sha256 = "333351206a2c8b674139225f2abcd380a3c9feea5705bcfa9b5b9ec0010196c6"
+table43_stat_infid = "000031981506"
+table43_sha256 = "2c40e197a6f43976638531e031ec4663790f232561f0b7abb5f5a341aad28445"
 
 [us]
 publisher = "CDC/NCHS National Vital Statistics System"
-series = "CDC WONDER final Natality 2007 onward"
+series = "CDC WONDER final Natality, 2007-2024 at acquisition"
 residence = "Mother's state of legal residence at birth"
 universe = "Live births occurring in the 50 states and DC to residents of the 50 states and DC"
 format = "Tab-delimited text export"
 catalogue_url = "https://wonder.cdc.gov/natality.html"
 request_url = "https://wonder.cdc.gov/natality-current.html"
 documentation_url = "https://wonder.cdc.gov/wonder/help/natality.html"
-state_month_query = ["Year", "Month", "State"]
+state_month_query = ["State", "Year", "Month"]
 national_month_query = ["Year", "Month"]
 year_filter = "2013–2019 inclusive"
+show_totals = true
+show_zero_values = false
+show_suppressed = false
+monthly_control_table = "Internet Table I-2"
+wonder_capture = "Original TSV responses saved from the standard interactive form on the department host"
+state_month_export_sha256 = "ab45930d2dde6773f1e8bdcf61271287e40787a9a9f95ebdfcf7103125ce794b"
+national_month_export_sha256 = "83539a9cf345af065f727a2d13bbfa151c2917bad3fed31da6a4aec0d8bfd293"
 measure = "Births, all characteristics"
 expected_state_months = 4284
 national_control_url = "https://stacks.cdc.gov/view/cdc/231899/cdc_231899_DS1.pdf"
@@ -79,33 +107,54 @@ territory_status = "Monthly resident series pending. Annual report coverage vari
 report_url = "https://stacks.cdc.gov/view/cdc/221896/cdc_221896_DS1.pdf"
 residence_table = 10
 national_births = 3932181
+report_sha256 = "9a21c76cb277476d26bb7e785062521747132fe3496966d06149a1c12594e24a"
+monthly_report_url = "https://stacks.cdc.gov/view/cdc/221896/cdc_221896_DS2.pdf"
+monthly_report_sha256 = "431bc9bc50ec1d83d953bb757afa198f6fb65a92dd4c9bfb08aafab477e92711"
 
 [us.years.2014]
 report_url = "https://stacks.cdc.gov/view/cdc/221898/cdc_221898_DS1.pdf"
 residence_table = 10
 national_births = 3988076
+report_sha256 = "d4a0ae4c8168e7406c75e973e450c2775129c7c564fae9d556ec6550414e50a8"
+monthly_report_url = "https://stacks.cdc.gov/view/cdc/221898/cdc_221898_DS2.pdf"
+monthly_report_sha256 = "ccc3fe36d840c904acf5db7dcfa869e11606d0550dbd4b7f7fed7787b24e91a7"
 
 [us.years.2015]
 report_url = "https://stacks.cdc.gov/view/cdc/222008/cdc_222008_DS1.pdf"
 residence_table = 10
 national_births = 3978497
+report_sha256 = "b5e65fe9a1b718f97f458f81ad2d69bf38265cc90ee6ce19ccffd44cc14257b0"
+monthly_report_url = "https://www.cdc.gov/nchs/data/nvsr/nvsr66/nvsr66_01_tables.pdf"
+monthly_report_sha256 = "c18166dc5fe365cc8b8f13f9a66676f93b754196054c3fd6a390eea3395d73d2"
 
 [us.years.2016]
 report_url = "https://stacks.cdc.gov/view/cdc/231864/cdc_231864_DS1.pdf"
 residence_table = 6
 national_births = 3945875
+report_sha256 = "9b512cdc8ac4b89b155d6e09d7c6e653b381b93a30422c41ab642bf0b238e782"
+monthly_report_url = "https://www.cdc.gov/nchs/data/nvsr/nvsr67/nvsr67_01_tables.pdf"
+monthly_report_sha256 = "de11ee12a7c7d00b93ea6510d6d511a76ea442a742aaf677c9269847a5451d13"
 
 [us.years.2017]
 report_url = "https://stacks.cdc.gov/view/cdc/231869/cdc_231869_DS1.pdf"
 residence_table = 6
 national_births = 3855500
+report_sha256 = "f40caf172f63bc285df2d3fec0c99001cc2deb5953287bfb392268bc87ea0dad"
+monthly_report_url = "https://www.cdc.gov/nchs/data/nvsr/nvsr67/nvsr67_08_tables-508.pdf"
+monthly_report_sha256 = "1ee6361b14447762733779eba4700b9b1953da174bc32b26149e469c276bdf34"
 
 [us.years.2018]
 report_url = "https://stacks.cdc.gov/view/cdc/231883/cdc_231883_DS1.pdf"
 residence_table = 6
 national_births = 3791712
+report_sha256 = "0885b1fecdc4834a0134b419a847eb412e96735db03d8b75650dbf3a7b9b5f32"
+monthly_report_url = "https://www.cdc.gov/nchs/data/nvsr/nvsr68/nvsr68_13_tables-508.pdf"
+monthly_report_sha256 = "2e20dd1ea0f1d152e7b080a96e39c9b4a1aebc342014478a6fafa55e4f83e5f4"
 
 [us.years.2019]
 report_url = "https://stacks.cdc.gov/view/cdc/231899/cdc_231899_DS1.pdf"
 residence_table = 6
 national_births = 3747540
+report_sha256 = "ed9f5ea977d167b7cbf016bf65208f6269356726fbf0a717653ed0cfe960e457"
+monthly_report_url = "https://stacks.cdc.gov/view/cdc/231899/cdc_231899_DS2.pdf"
+monthly_report_sha256 = "ca28d167191d033e30da78abfa6b22acfcc90483e3a6670ae1bdb3d7529c07b1"

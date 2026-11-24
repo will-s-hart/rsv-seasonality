@@ -74,7 +74,9 @@ def write_csv(path, header, rows):
 
 
 class NatalityCommandTests(unittest.TestCase):
-    def run_check(self, country, rows, *args, reference_rows=None, include_reference=True):
+    def run_check(
+        self, country, rows, *args, reference_rows=None, include_reference=True, monthly_controls=None
+    ):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "natality.csv"
             reference_path = Path(directory) / "reference.csv"
@@ -95,6 +97,10 @@ class NatalityCommandTests(unittest.TestCase):
             if include_reference:
                 write_csv(reference_path, reference_header, reference_rows)
                 command += [reference_flag, str(reference_path)]
+            if monthly_controls is not None:
+                monthly_path = Path(directory) / "national-months.csv"
+                write_csv(monthly_path, ["year", "month", "births", "report_url"], monthly_controls)
+                command += ["--us-national-month-controls", str(monthly_path)]
             return subprocess.run(command, capture_output=True, text=True, check=False)
 
     def assert_invalid(self, result, reason):
@@ -173,6 +179,30 @@ class NatalityCommandTests(unittest.TestCase):
         result = self.run_check("us", fixture_rows("us"))
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("4,284", result.stdout)
+
+    def test_us_monthly_reference_detects_month_reallocation(self):
+        rows = fixture_rows("us")
+        releases = source_years("us")
+        monthly = [
+            [year, period, count, releases[year]["monthly_report_url"]]
+            for year, period, location, count in rows
+            if period in MONTHS and location == "national"
+        ]
+        result = self.run_check("us", rows, monthly_controls=monthly)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("84 independent NCHS national months", result.stdout)
+        for row in rows:
+            if row[0] == "2013" and row[2] in {"01", "national"} and row[1] in {"01", "02"}:
+                row[3] += 1 if row[1] == "01" else -1
+        self.assertEqual(self.run_check("us", rows).returncode, 0)
+        self.assert_invalid(
+            self.run_check("us", rows, monthly_controls=monthly),
+            "2013 01: national births",
+        )
+        self.assert_invalid(
+            self.run_check("us", rows, monthly_controls=monthly[1:]),
+            "missing 1 US national monthly controls",
+        )
 
     def test_us_reference_totals_are_required(self):
         rows = fixture_rows("us", match_controls=False)
