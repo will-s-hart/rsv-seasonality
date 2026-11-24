@@ -100,7 +100,7 @@ def source_filenames():
     return {CDC_EXPORT, *(workbook_name(year, table) for year in YEARS for table in NESID_TABLES)}
 
 
-def verify_inputs(directory, manifest=MANIFEST):
+def load_pins(manifest=MANIFEST):
     expected_names = source_filenames()
     digests = {}
     for number, line in enumerate(manifest.read_text(encoding="ascii").splitlines(), 1):
@@ -114,6 +114,11 @@ def verify_inputs(directory, manifest=MANIFEST):
         f"{manifest.name}: missing {sorted(expected_names - digests.keys())}, "
         f"unexpected {sorted(digests.keys() - expected_names)}",
     )
+    return digests
+
+
+def verify_inputs(directory, manifest=MANIFEST):
+    digests = load_pins(manifest)
     for name, expected in digests.items():
         path = directory / name
         require(path.is_file(), f"{name}: missing source file")

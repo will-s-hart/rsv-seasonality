@@ -195,6 +195,24 @@ def verify_stage(cache_dir, source):
     return path, receipt
 
 
+def receipt_scope(source, contract):
+    panel = contract["panels"][source["panel"]]
+    publisher = contract["publishers"][source["publisher"]]
+    return {
+        "catalog_url": source["catalog_url"],
+        "publisher": publisher["name"],
+        "terms_url": publisher["terms_url"],
+        "source_format": source["format"],
+        "role": source["role"],
+        "geography": source.get("geography", panel["geography"]),
+        "universe": panel["universe"],
+        "reference_dates": [f"{year}-{panel['reference_month_day']}" for year in source["years"]],
+        "age_band": {
+            "total_control": "all ages", "geography_control": None,
+        }.get(source["role"], contract["age_band"]),
+    }
+
+
 def stage_source(cache_dir, source, contract, from_file):
     destination = cache_dir / source["id"]
     if destination.exists():
@@ -204,8 +222,6 @@ def stage_source(cache_dir, source, contract, from_file):
         return receipt
 
     cache_dir.mkdir(parents=True, exist_ok=True)
-    panel = contract["panels"][source["panel"]]
-    publisher = contract["publishers"][source["publisher"]]
     with tempfile.TemporaryDirectory(prefix=f".{source['id']}-", dir=cache_dir) as temporary:
         source_dir = Path(temporary)
         path = source_dir / "source"
@@ -233,26 +249,16 @@ def stage_source(cache_dir, source, contract, from_file):
             "source_id": source["id"],
             "source_url": source["url"],
             "resolved_url": resolved_url,
-            "catalog_url": source["catalog_url"],
             "capture_method": capture_method,
             "captured_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
             "http_etag": etag,
             "http_last_modified": last_modified,
-            "publisher": publisher["name"],
-            "terms_url": publisher["terms_url"],
             "source_table": source["table"],
             "source_vintage": source["vintage"],
             "source_release_date": source["release_date"],
             "source_release_id": source.get("release_id"),
             "source_unit": source["source_unit"],
-            "source_format": source["format"],
-            "role": source["role"],
-            "geography": source.get("geography", panel["geography"]),
-            "universe": panel["universe"],
-            "reference_dates": [f"{year}-{panel['reference_month_day']}" for year in source["years"]],
-            "age_band": {
-                "total_control": "all ages", "geography_control": None,
-            }.get(source["role"], contract["age_band"]),
+            **receipt_scope(source, contract),
             "bytes": path.stat().st_size,
             "sha256": digest,
             "expected_sha256": source.get("expected_sha256"),
