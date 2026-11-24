@@ -69,3 +69,21 @@ Japan diagnosis weeks run Monday through Sunday. They use the ISO week conventio
 | US 2018 W01 (`1801`) | 2017-12-31 | 2018-01-06 |
 
 The fixtures check that Japan 2017 W52 and US 2018 W01 both include 31 December 2017, their only shared date. The export supports retrospective evaluation only. Establishing what data were available at a given week end requires historical release records. For example, Japan's 2018 W01 ended on 7 January 2018, and the official preliminary surveillance table was updated on 17 January 2018. [JIHS preliminary 2018 W01 table](https://id-info.jihs.go.jp/niid/ja/data/7759-idwr-sokuho-data-j-1801.html).
+
+## Check candidate calendar cutoffs
+
+Run the read-only diagnostic on an existing export or a CSV with the same calendar, row-key and coverage columns. This example uses the calendar dates corresponding to the provisional 2013–2016 training, 2017 tuning and 2018–2019 retrospective holdout years.
+
+```sh
+python -B scripts/check_weekly_cutoffs.py data/processed/weekly_observations.csv \
+    --window-start 2013-01-01 \
+    --train-through 2016-12-31 \
+    --tune-through 2017-12-31 \
+    --holdout-through 2019-12-31
+```
+
+The diagnostic compares `source_week_year` against those provisional label years and checks each complete inclusive observation interval against the supplied dates. Each period end belongs to that period. The following period starts the next day. An interval that ends on its period's last day can be assigned to that period. An interval that starts on that day and extends into the next period crosses the cutoff. With the dates above, Japan 2017 W52 is assigned to tune under both rules. US 2018 W01 has a holdout label and is unassigned under the complete-interval rule because it includes 31 December 2017.
+
+The JSON report counts every input row by source, method, coverage and the two assignments. `affected_rows` lists each differing or strict-unassigned row with its native key, dates, coverage and any crossed cutoffs. A strict assignment of `null` has status `crosses_cutoff` for a row spanning a boundary or `outside_window` for a row wholly outside the supplied window. Coverage remains visible in the report, including absent antigen grid rows. Reported dates describe observation intervals. Period-end availability is unknown from the interval dates and source vintage. A prospective evaluation would require separate historical release records.
+
+The final cutoff policy for the retrospective evaluation is a joint design decision.
