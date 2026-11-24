@@ -8,6 +8,7 @@ The initial analysis will jointly model Japan and winter-dominant regions of the
 
 - [Literature review](notes/literature-review.md)
 - [Data sources and feasibility](notes/data-sources.md)
+- [Weekly RSV observation export for Japan and the US](notes/weekly-observations-2013-2019.md)
 - [Tentative modelling methodology](notes/modelling-methodology.md)
 - [Analysis plan and Will/Torkel responsibilities](notes/analysis-plan.md)
 - [UDE types considered for integrating several datasets](notes/ude-types-considered.md)
@@ -34,6 +35,6 @@ julia --startup-file=no --project=. scripts/check_setup.jl
 | `scripts/` | Reproducible command-line entry points |
 | `data/` | Data conventions and local raw/processed data, excluded from Git |
 | `results/` | Local generated figures, tables, and fitted objects, excluded from Git |
-| `.github/workflows/` | Julia package-loading smoke check |
+| `.github/workflows/` | Julia package-loading smoke check and synthetic Python fixtures |
 
 For each downloaded dataset, record provenance, access date, source version, licence, units, and a checksum before using it. Data redistribution remains subject to the original provider's terms; the repository licence covers original project material only.
