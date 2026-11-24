@@ -121,11 +121,17 @@ function _nonnegative_mean(mu::Real)
     return mu
 end
 
-function _probability(p::Real)
+function _probability_float(p::Real)
     if p isa Bool || !isfinite(p) || !(0 <= p <= 1)
         throw(ArgumentError("the test-positive probability must be in [0, 1]"))
     end
-    return p
+    probability = _parameter_float(p)
+    if 0 < p < 1 && !(0 < probability < 1)
+        probability = BigFloat(p)
+        0 < probability < 1 ||
+            throw(ArgumentError("an interior probability rounded to a boundary; supply higher precision"))
+    end
+    return probability
 end
 
 function _positive_dispersion(value::Real)
@@ -169,7 +175,7 @@ struct BinomialPositivity{T<:AbstractFloat}
     p::T
 
     function BinomialPositivity(p::Real)
-        probability = _parameter_float(_probability(p))
+        probability = _probability_float(p)
         return new{typeof(probability)}(probability)
     end
 end
@@ -187,7 +193,7 @@ struct BetaBinomialPositivity{T<:AbstractFloat}
     concentration::T
 
     function BetaBinomialPositivity(p::Real, concentration::Real)
-        probability, shape = promote(_parameter_float(_probability(p)),
+        probability, shape = promote(_probability_float(p),
                                      _parameter_float(_positive_dispersion(concentration)))
         _positive_dispersion(shape)
         return new{typeof(probability)}(probability, shape)

@@ -189,4 +189,17 @@ end
         BetaBinomialPositivity(BigFloat("0.5"), big"2"))
     @test result isa BigFloat
     @test result ≈ -log(BigFloat(3))
+
+    # Conversion of an interior rational must preserve the support.
+    p = (typemax(Int) - 1) // typemax(Int)
+    one_negative = USObservation(PCR, 0, ReportedTests(PCR, 1))
+    for model in (BinomialPositivity(p), BetaBinomialPositivity(p, 2))
+        @test 0 < model.p < 1
+        @test observation_loglikelihood(one_negative, model) ≈ log(BigFloat(1 - p))
+    end
+    setprecision(BigFloat, 128) do
+        too_close = 1 - 1 // big(2)^256
+        @test_throws ArgumentError BinomialPositivity(too_close)
+        @test_throws ArgumentError BetaBinomialPositivity(too_close, 2)
+    end
 end
