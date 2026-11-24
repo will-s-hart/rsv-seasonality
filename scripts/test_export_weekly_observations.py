@@ -224,6 +224,36 @@ class ExportTests(unittest.TestCase):
                 self.assertEqual(stat.S_IMODE(destination.stat().st_mode), 0o640)
             self.assertEqual(list(directory.iterdir()), [destination])
 
+    def test_cli_refuses_to_replace_pinned_sources(self):
+        with TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            sources = directory / "sources"
+            sources.mkdir()
+            aliased_sources = directory / "alias"
+            aliased_sources.symlink_to(sources, target_is_directory=True)
+            cdc = sources / audit.CDC_EXPORT
+            cdc.write_bytes(b"original CDC input")
+            workbook = sources / audit.workbook_name(2013, "8-1")
+            staged_workbook = directory / "official.xls"
+            staged_workbook.write_bytes(b"original workbook input")
+            workbook.symlink_to(staged_workbook)
+
+            for destination in (cdc, aliased_sources / cdc.name, staged_workbook):
+                with self.subTest(destination=destination):
+                    result = subprocess.run(
+                        [sys.executable, "-B", export.__file__, str(sources), "--output",
+                         str(destination)],
+                        capture_output=True, text=True,
+                    )
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("output destination must not be an audit source file", result.stderr)
+                    self.assertEqual(result.stdout, "")
+            self.assertEqual(cdc.read_bytes(), b"original CDC input")
+            self.assertEqual(staged_workbook.read_bytes(), b"original workbook input")
+            self.assertTrue(workbook.is_symlink())
+            self.assertEqual(set(sources.iterdir()), {cdc, workbook})
+            self.assertEqual(set(directory.iterdir()), {sources, aliased_sources, staged_workbook})
+
     def test_cli_close_failure_preserves_output(self):
         @contextmanager
         def failing_close(*args, **kwargs):
