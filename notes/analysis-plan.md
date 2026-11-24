@@ -49,6 +49,6 @@ Freeze climate transformations, train-only scaling, lag choices, input vintages,
 
 A first substantive result should explain what a shared or partially pooled climate response can account for across the initial two countries, how behavioural interpretations stand up to alternatives, and which features remain uncertain. Further countries strengthen this aim without being prerequisites for the first analysis.
 
-- **Will:** use the [surveillance audit](surveillance-audit-2013-2019.md) to specify observation models, testing and reporting sensitivities, and a locked input manifest.
+- **Will:** use the verified [weekly observation export](weekly-observations-2013-2019.md) and [surveillance audit](surveillance-audit-2013-2019.md) to specify observation models, testing and reporting sensitivities, and a locked analysis input manifest. The exporter reproduces the CSV from the 29 pinned inputs and preserves previous exports on failure.
 - **Torkel:** prototype `climate_response(parameters, weather, context)` and the differentiable daily renewal recursion; compare an unrestricted joint response with one small behaviour-informed architecture on synthetic two-country data.
 - **Joint:** fix the first regions, behavioural hypotheses, baseline period, held-out design, and recovery criteria before fitting real outcomes.
