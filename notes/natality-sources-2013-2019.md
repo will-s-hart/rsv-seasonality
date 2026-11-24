@@ -52,6 +52,7 @@ Use an ignored local data directory or an equivalent private directory outside t
 - Write normalized UTF-8 extracts with `year,month,location_id,births,male,female` for Japan and `year,month,location_id,births` for the US. Use four-digit years and `annual` for a published annual count. The validators reconcile on location and period keys and require complete grids.
 
 ```sh
+mkdir -p data/processed/natality
 python3 -B scripts/stage_japan_natality.py data/raw/natality data/processed/natality/japan-release
 python3 -B scripts/check_natality.py japan data/processed/natality/japan-release/japan.csv \
   --japan-residence-contract data/processed/natality/japan-release/japan-residence-contract.csv \
