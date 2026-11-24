@@ -6,7 +6,8 @@ period = "calendar month of birth"
 [japan]
 publisher = "Ministry of Health, Labour and Welfare, via e-Stat"
 series = "Vital Statistics of Japan, final natality, Volume 2 Table 2"
-residence = "Mother's address"
+residence = "Child's address in official prefecture birth tabulations. Confirm each monthly Table 2 file's footnotes at acquisition."
+residence_method_url = "https://www.mhlw.go.jp/toukei/saikin/hw/jinkou/houkoku17/dl/03.pdf"
 universe = "Main final tables for Japanese vital events in Japan"
 format = "CSV (catalogue)"
 catalogue_url_template = "https://www.e-stat.go.jp/en/stat-search/files?stat_infid={id}&layout=datalist"
@@ -16,6 +17,9 @@ terms_url = "https://www.e-stat.go.jp/en/terms-of-use"
 national_control_url = "https://www.mhlw.go.jp/english/database/db-hw/dl/81-1a2en.pdf"
 national_control_crosscheck_url = "https://www.mhlw.go.jp/toukei/saikin/hw/jinkou/kakutei19/dl/04_h2-1.pdf"
 national_control_status = "Compare after confirming the Table 2 file vintage and scope"
+prefecture_annual_control_url = "https://www.e-stat.go.jp/dbview?sid=0003411597"
+prefecture_annual_control_status = "Candidate comparison with final Table 4-3 birth counts after matching revision, universe and vintage"
+expected_prefecture_year_controls = 329
 expected_prefecture_months = 3948
 
 [japan.years.2013]
