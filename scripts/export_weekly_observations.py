@@ -105,6 +105,11 @@ def write_observations(directory, stream):
 
 
 def write_output_file(directory, destination):
+    destination = destination.parent.resolve() / destination.name
+    source_paths = {(directory / name).resolve() for name in audit.source_filenames()}
+    if destination.resolve() in source_paths:
+        raise ValueError(f"{destination}: output destination must not be an audit source file")
+
     temporary = None
     try:
         with NamedTemporaryFile(

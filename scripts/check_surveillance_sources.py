@@ -96,9 +96,12 @@ def workbook_name(year, table):
     return f"{year}-{table}.{extension}"
 
 
+def source_filenames():
+    return {CDC_EXPORT, *(workbook_name(year, table) for year in YEARS for table in NESID_TABLES)}
+
+
 def verify_inputs(directory, manifest=MANIFEST):
-    expected_names = {workbook_name(year, table) for year in YEARS for table in NESID_TABLES}
-    expected_names.add(CDC_EXPORT)
+    expected_names = source_filenames()
     digests = {}
     for number, line in enumerate(manifest.read_text(encoding="ascii").splitlines(), 1):
         entry = re.fullmatch(r"([0-9a-f]{64})  (\S+)", line)
