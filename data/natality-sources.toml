@@ -1,0 +1,111 @@
+baseline_start = 2013
+baseline_end = 2019
+units = "live births"
+period = "calendar month of birth"
+
+[japan]
+publisher = "Ministry of Health, Labour and Welfare, via e-Stat"
+series = "Vital Statistics of Japan, final natality, Volume 2 Table 2"
+residence = "Child's address in official prefecture birth tabulations. Confirm each monthly Table 2 file's footnotes at acquisition."
+residence_method_url = "https://www.mhlw.go.jp/toukei/saikin/hw/jinkou/houkoku17/dl/03.pdf"
+universe = "Main final tables for Japanese vital events in Japan"
+format = "CSV (catalogue)"
+catalogue_url_template = "https://www.e-stat.go.jp/en/stat-search/files?stat_infid={id}&layout=datalist"
+download_url_template = "https://www.e-stat.go.jp/stat-search/file-download?fileKind=1&statInfId={id}"
+archive_notice_url = "https://www.mhlw.go.jp/toukei/saikin/hw/jinkou/kakutei17/index.html"
+terms_url = "https://www.e-stat.go.jp/en/terms-of-use"
+national_control_url = "https://www.mhlw.go.jp/english/database/db-hw/dl/81-1a2en.pdf"
+national_control_crosscheck_url = "https://www.mhlw.go.jp/toukei/saikin/hw/jinkou/kakutei19/dl/04_h2-1.pdf"
+national_control_status = "Compare after confirming the Table 2 file vintage and scope"
+prefecture_annual_control_url = "https://www.e-stat.go.jp/dbview?sid=0003411597"
+prefecture_annual_control_status = "Candidate comparison with final Table 4-3 birth counts after matching revision, universe and vintage"
+expected_prefecture_year_controls = 329
+expected_prefecture_months = 3948
+
+[japan.years.2013]
+stat_infid = "000027231494"
+catalogue_updated = 2021-04-20
+national_births = 1029817
+
+[japan.years.2014]
+stat_infid = "000031288423"
+catalogue_updated = 2021-04-20
+national_births = 1003609
+
+[japan.years.2015]
+stat_infid = "000032018395"
+catalogue_updated = 2021-03-31
+national_births = 1005721
+
+[japan.years.2016]
+stat_infid = "000032018686"
+catalogue_updated = 2021-03-31
+national_births = 977242
+
+[japan.years.2017]
+stat_infid = "000032019031"
+catalogue_updated = 2021-03-31
+national_births = 946146
+
+[japan.years.2018]
+stat_infid = "000031881344"
+catalogue_updated = 2019-11-28
+national_births = 918400
+
+[japan.years.2019]
+stat_infid = "000031981544"
+catalogue_updated = 2020-09-17
+national_births = 865239
+
+[us]
+publisher = "CDC/NCHS National Vital Statistics System"
+series = "CDC WONDER final Natality 2007 onward"
+residence = "Mother's state of legal residence at birth"
+universe = "Live births occurring in the 50 states and DC to residents of the 50 states and DC"
+format = "Tab-delimited text export"
+catalogue_url = "https://wonder.cdc.gov/natality.html"
+request_url = "https://wonder.cdc.gov/natality-current.html"
+documentation_url = "https://wonder.cdc.gov/wonder/help/natality.html"
+state_month_query = ["Year", "Month", "State"]
+national_month_query = ["Year", "Month"]
+year_filter = "2013–2019 inclusive"
+measure = "Births, all characteristics"
+expected_state_months = 4284
+national_control_url = "https://stacks.cdc.gov/view/cdc/231899/cdc_231899_DS1.pdf"
+national_control_table = 1
+territory_status = "Monthly resident series pending. Annual report coverage varies."
+
+[us.years.2013]
+report_url = "https://stacks.cdc.gov/view/cdc/221896/cdc_221896_DS1.pdf"
+residence_table = 10
+national_births = 3932181
+
+[us.years.2014]
+report_url = "https://stacks.cdc.gov/view/cdc/221898/cdc_221898_DS1.pdf"
+residence_table = 10
+national_births = 3988076
+
+[us.years.2015]
+report_url = "https://stacks.cdc.gov/view/cdc/222008/cdc_222008_DS1.pdf"
+residence_table = 10
+national_births = 3978497
+
+[us.years.2016]
+report_url = "https://stacks.cdc.gov/view/cdc/231864/cdc_231864_DS1.pdf"
+residence_table = 6
+national_births = 3945875
+
+[us.years.2017]
+report_url = "https://stacks.cdc.gov/view/cdc/231869/cdc_231869_DS1.pdf"
+residence_table = 6
+national_births = 3855500
+
+[us.years.2018]
+report_url = "https://stacks.cdc.gov/view/cdc/231883/cdc_231883_DS1.pdf"
+residence_table = 6
+national_births = 3791712
+
+[us.years.2019]
+report_url = "https://stacks.cdc.gov/view/cdc/231899/cdc_231899_DS1.pdf"
+residence_table = 6
+national_births = 3747540

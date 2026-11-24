@@ -56,3 +56,7 @@ A first substantive result should explain what a shared or partially pooled clim
 - **Will:** use the verified [weekly observation export](weekly-observations-2013-2019.md) and [surveillance audit](surveillance-audit-2013-2019.md) to specify observation models, testing and reporting sensitivities, and a locked analysis input manifest. The exporter reproduces the CSV from the 29 pinned inputs and preserves previous exports on failure.
 - **Torkel:** prototype `climate_response(parameters, weather, context)` and the differentiable daily renewal recursion; compare an unrestricted joint response with one small behaviour-informed architecture on synthetic two-country data.
 - **Joint:** fix the first regions, behavioural hypotheses, baseline period, held-out design, and recovery criteria before fitting real outcomes.
+
+### Natality source audit
+
+The [2013–2019 natality catalogue and validation contract](natality-sources-2013-2019.md) covers Japan prefectures and US states/DC. Synthetic fixtures exercise the validator with independent US state/DC annual controls and a Japan residence contract for each vintage. Will's next step is to acquire and checksum the official files, confirm the Japan Table 2 footnotes, prepare the reference inputs, and run coverage and reconciliation checks. Check the 329 Japan prefecture-year totals against Table 4-3 if its scope, revision and vintage match. Monthly territory coverage remains open.
