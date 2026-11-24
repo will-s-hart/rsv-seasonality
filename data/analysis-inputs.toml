@@ -1,0 +1,126 @@
+schema_version = 1
+source_label_years = [2013, 2014, 2015, 2016, 2017, 2018, 2019]
+scope = "Audited epidemiological source artifacts for baseline assembly"
+analysis_freeze_status = "pending"
+
+[surveillance]
+pins = "scripts/surveillance_sources.sha256"
+raw_directory = "surveillance-audit"
+audit = "notes/surveillance-audit-2013-2019.md"
+
+[surveillance.jp]
+publisher = "Japan Institute for Health Security (JIHS), final NESID/IDWR annual archive"
+catalog_url = "https://id-info.jihs.go.jp/surveillance/idwr/annual/2024/archive/index.html"
+url_template = "https://id-info.jihs.go.jp/niid/images/idwr/ydata/{year}/Syuukei/Syu_{number}_{part}.{extension}"
+terms_url = "https://id-info.jihs.go.jp/usage-contract.html"
+vintage = "Final annual tables by diagnosis year. Exact workbook snapshot and retrieval dates are undocumented."
+geography = "47 prefectures, with national controls"
+calendar = "Monday–Sunday local diagnosis weeks, inclusive"
+first_period_start = 2012-12-31
+last_period_end = 2019-12-29
+prefecture_weeks = 17155
+response = "Weekly RSV case reports, table 8-1"
+denominator = "Weekly designated paediatric sentinel sites, table 14-1. Sites are reporting capacity and do not measure tests or catchment size."
+weekly_rate_control = "Table 8-2 publishes weekly RSV rates in 2018–2019. Earlier files are pinned and lack RSV on the weekly rate sheets."
+annual_age_control = "Table 12-1 supplies annual age and sex counts. Weekly age counts are unavailable."
+
+[surveillance.us]
+publisher = "US CDC, National Respiratory and Enteric Virus Surveillance System"
+catalog_url = "https://data.cdc.gov/Laboratory-Surveillance/Respiratory-Syncytial-Virus-Laboratory-Data-NREVSS/52kb-ccu2/about_data"
+url = "https://data.cdc.gov/resource/52kb-ccu2.csv?$limit=20000&$order=:id"
+dataset_id = "52kb-ccu2"
+reuse_terms = "Public Domain U.S. Government, per CDC catalogue"
+vintage = "2022 historical public-use export, July 2010–June 2020"
+catalogue_data_updated = 2022-10-21
+retrieval_date_status = "undocumented"
+geography = "10 HHS regions. The participating laboratory panel and patient residence by jurisdiction are unobserved."
+calendar = "Sunday–Saturday reporting periods, inclusive, with MMWR week labels and a separate July–June surveillance season"
+first_period_start = 2012-12-30
+last_period_end = 2019-12-28
+hhs_region_weeks_per_method = 3650
+
+[surveillance.us.pcr]
+response = "Positive PCR detections"
+denominator = "Reported PCR tests"
+reported_rows = 3650
+absent_rows = 0
+zero_test_rows = 0
+flagged_rows = 11
+
+[surveillance.us.antigen]
+response = "Positive antigen detections"
+denominator = "Reported antigen tests"
+reported_rows = 3569
+absent_rows = 81
+zero_test_rows = 8
+flagged_rows = 33
+missingness = "Three absent weeks in Region 2 and 78 in Region 8. Keep absent rows, reported zero-test rows and flagged rows distinct."
+
+[natality]
+contract = "data/natality-sources.toml"
+raw_directory = "natality"
+audit = "notes/natality-sources-2013-2019.md"
+role = "Ancillary live births by calendar month"
+
+[natality.jp]
+independent_check = "329 prefecture-year totals against paired annual Table 4-3 releases"
+coverage_note = "Child's address in the main final Japanese vital-event universe. National controls also include the address-abroad row. The population series covers all nationalities."
+
+[natality.us]
+independent_check = "357 state/DC-year controls and 84 national monthly controls from NCHS"
+coverage_note = "Mother's legal residence for live births occurring in states/DC to residents of states/DC. Monthly state/DC cells reconcile to annual and national controls."
+wonder_retrieved = 2026-11-24
+wonder_terms_url = "https://wonder.cdc.gov/datause.html"
+
+[population]
+contract = "data/demographic-sources.toml"
+raw_directory = "demography"
+audit = "notes/demographic-sources-2013-2019.md"
+role = "Ancillary annual all-age and age 0–4 resident counts"
+local_control_pins = ["us-national-control", "us-county-control"]
+
+[population.jp]
+coverage_note = "47 prefectures. Annual October 1 counts. Original estimates for 2013–2014 and intercensal adjustments for 2016–2019 are published in thousands of persons. The original apportioned 2015 census is in persons."
+audited_retrieval_date = 2026-11-24
+sources = [
+    "jp-2013-age", "jp-2013-total", "jp-2013-national",
+    "jp-2014-age", "jp-2014-total", "jp-2014-national",
+    "jp-2015-census", "jp-2015-single-age",
+    "jp-2016-2019-age", "jp-2016-2019-total", "jp-2016-2019-national",
+]
+
+[population.us]
+coverage_note = "50 states and DC. Annual July 1 counts. Previously reconciled to national and county controls and checked against DC, NJ and NY workbooks."
+sources = [
+    "us-states", "us-national-control", "us-county-control",
+    "us-age-sex-11", "us-age-sex-34", "us-age-sex-36",
+]
+
+[population.pr]
+coverage_note = "Puerto Rico commonwealth, separately reconciled to all 78 municipios for each July 1."
+sources = ["pr-commonwealth", "pr-municipios", "pr-municipio-codes"]
+
+[unresolved.climate]
+status = "missing"
+owner = "Torkel"
+detail = "No locked ERA5 artifacts, climate provenance, transformations or aggregation inputs."
+
+[unresolved.source_freeze]
+status = "pending"
+owner = "Will and Torkel"
+detail = "Analysis-wide source vintages and freeze date remain to be agreed. Verified source artifacts and retrospective observation dates do not establish historical availability."
+
+[unresolved.joint_geography]
+status = "undecided"
+owner = "Will and Torkel"
+detail = "First prefectures and HHS regions, geographic folds, and HHS weather and catchment weighting remain open. Region 2 includes NJ, NY, Puerto Rico and the US Virgin Islands."
+
+[unresolved.holdout]
+status = "undecided"
+owner = "Will and Torkel"
+detail = "Calendar cutoffs, treatment of overlapping and edge weeks, and final retrospective holdout settings remain open."
+
+[unresolved.territories]
+status = "unresolved"
+owner = "Will, subject to joint geography"
+detail = "Puerto Rico annual population is verified separately and the annual NCHS residence reports cover Puerto Rico. Monthly territorial residence births remain unresolved, including Puerto Rico and the US Virgin Islands. US Virgin Islands annual population is outside the verified scope. State/DC coverage does not establish full HHS Region 2."
