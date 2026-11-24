@@ -33,11 +33,14 @@ STATE_FIELDS = (
 NATIONAL_FIELDS = ("SEX", "AGE", *COUNT_FIELDS)
 COUNTY_CONTROL_FIELDS = ("SUMLEV", "STATE", "COUNTY", "STNAME", "YEAR", "POPESTIMATE", "AGE04_TOT")
 COUNTY_YEAR_CODES = dict(zip(range(5, 12), YEARS, strict=True))
-OUTPUT_FIELDS = (
+POPULATION_FIELDS = (
     "location_id", "location_name", "geography", "year", "reference_date",
     "population_total", "population_age_0_4", "share_age_0_4",
     "universe", "source_unit", "source_id", "source_table", "source_vintage",
     "source_release_date", "source_release_id", "source_sha256", "source_capture_method",
+)
+OUTPUT_FIELDS = (
+    *POPULATION_FIELDS,
     "control_source_sha256", "control_capture_method", "county_control_sha256",
     "county_control_capture_method",
 )
@@ -155,10 +158,12 @@ def validate_download_format(path, source):
             validate_xlsx(path)
         except (zipfile.BadZipFile, ElementTree.ParseError, KeyError, RuntimeError, ValueError) as error:
             raise ValueError(f"{source['id']}: expected an XLSX workbook: {error}") from error
-    elif source["format"] == "csv":
+    elif source["format"] in ("csv", "pipe-delimited"):
+        separator = b"," if source["format"] == "csv" else b"|"
         text_prefix = prefix.removeprefix(b"\xef\xbb\xbf").lstrip()
-        if not text_prefix or text_prefix.startswith((b"<", b"{", b"[")) or b"," not in prefix:
-            raise ValueError(f"{source['id']}: response does not resemble CSV")
+        if not text_prefix or text_prefix.startswith((b"<", b"{", b"[")) or separator not in prefix:
+            label = "CSV" if source["format"] == "csv" else "pipe-delimited text"
+            raise ValueError(f"{source['id']}: response does not resemble {label}")
     else:
         raise ValueError(f"{source['id']}: unsupported source format")
 
@@ -178,6 +183,7 @@ def verify_stage(cache_dir, source):
         or receipt["source_vintage"] != source["vintage"]
         or receipt["source_release_date"] != source["release_date"]
         or receipt.get("source_release_id") != source.get("release_id")
+        or receipt["source_unit"] != source["source_unit"]
         or receipt["capture_method"] not in ("download", "local_file")
     ):
         raise ValueError(f"{source['id']}: staged manifest disagrees with source contract")
@@ -244,7 +250,9 @@ def stage_source(cache_dir, source, contract, from_file):
             "geography": source.get("geography", panel["geography"]),
             "universe": panel["universe"],
             "reference_dates": [f"{year}-{panel['reference_month_day']}" for year in source["years"]],
-            "age_band": contract["age_band"] if source["role"] != "total_control" else "all ages",
+            "age_band": {
+                "total_control": "all ages", "geography_control": None,
+            }.get(source["role"], contract["age_band"]),
             "bytes": path.stat().st_size,
             "sha256": digest,
             "expected_sha256": source.get("expected_sha256"),
@@ -258,9 +266,39 @@ def stage_source(cache_dir, source, contract, from_file):
     return receipt
 
 
-def read_source_csv(path, fields, *, encoding="utf-8-sig", exact_header=True):
+def read_xlsx_sheets(path, names):
+    # The staging cache deliberately stores the original bytes without a filename extension.
+    from openpyxl import load_workbook
+
+    with path.open("rb") as stream:
+        workbook = load_workbook(stream, read_only=True, data_only=True)
+        try:
+            return {name: list(workbook[name].values) for name in names}
+        finally:
+            workbook.close()
+
+
+def assert_cells(rows, expected, label):
+    for (row, column), value in expected.items():
+        try:
+            actual = rows[row - 1][column - 1]
+        except IndexError as error:
+            raise ValueError(f"{label}: missing R{row}C{column}") from error
+        if isinstance(actual, str):
+            actual = " ".join(actual.split())
+        if actual != value:
+            raise ValueError(f"{label}: unexpected header at R{row}C{column}")
+
+
+def spreadsheet_count(value, label):
+    if type(value) not in (int, float) or not value >= 0 or value % 1 != 0:
+        raise ValueError(f"{label}: expected a nonnegative integer count")
+    return int(value)
+
+
+def read_source_csv(path, fields, *, encoding="utf-8-sig", exact_header=True, delimiter=","):
     with path.open(encoding=encoding, newline="") as stream:
-        reader = csv.reader(stream, strict=True)
+        reader = csv.reader(stream, strict=True, delimiter=delimiter)
         header = tuple(next(reader, ()))
         if exact_header:
             valid_header = header == fields
@@ -446,6 +484,11 @@ def build_states(cache_dir, output_path, contract, sources, *, check_counties=Fa
 
     if len(rows) != panel["expected_rows"] or len(STATE_NAMES) != panel["locations"]:
         raise ValueError("state output dimensions disagree with the demographic contract")
+    write_panel(output_path, cache_dir, OUTPUT_FIELDS, rows)
+    return len(rows)
+
+
+def write_panel(output_path, cache_dir, fields, rows):
     if output_path.resolve().is_relative_to(cache_dir.resolve()) or output_path.resolve().is_relative_to(
         ROOT / "data/raw"
     ):
@@ -456,10 +499,9 @@ def build_states(cache_dir, output_path, contract, sources, *, check_counties=Fa
         pending = Path(temporary) / "output.csv"
         with pending.open("w", encoding="utf-8", newline="") as stream:
             writer = csv.writer(stream, lineterminator="\n")
-            writer.writerow(OUTPUT_FIELDS)
+            writer.writerow(fields)
             writer.writerows(rows)
         os.replace(pending, output_path)
-    return len(rows)
 
 
 def main():

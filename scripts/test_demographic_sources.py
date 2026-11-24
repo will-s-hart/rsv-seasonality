@@ -108,6 +108,21 @@ def write_workbook(path, *, include_worksheet=True):
             archive.writestr(name, contents)
 
 
+def fixture_checkout(root, *scripts):
+    script_dir = root / "scripts"
+    script_dir.mkdir(parents=True)
+    for name in (SCRIPT.name, *scripts):
+        shutil.copyfile(SCRIPT.with_name(name), script_dir / name)
+    contract = root / "data" / CONTRACT.name
+    contract.parent.mkdir()
+    contract.write_text(
+        "".join(line for line in CONTRACT.read_text(encoding="utf-8").splitlines(keepends=True)
+                if not line.startswith("expected_sha256 =")),
+        encoding="utf-8",
+    )
+    return contract
+
+
 class DemographicCLITest(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
@@ -118,7 +133,9 @@ class DemographicCLITest(unittest.TestCase):
         self.control = self.directory / "synthetic-national.csv"
         self.counties = self.directory / "synthetic-counties.csv"
         self.output = self.directory / "processed.csv"
-        self.script = SCRIPT
+        checkout = self.directory / "checkout"
+        self.contract = fixture_checkout(checkout)
+        self.script = checkout / "scripts" / SCRIPT.name
 
     def cli(self, *args, error=None):
         result = subprocess.run(
@@ -150,16 +167,7 @@ class DemographicCLITest(unittest.TestCase):
         self.stage(self.counties, "us-county-control")
 
     def replace_source_field(self, source, field_line, replacement):
-        # Run the real command with a private contract copy for metadata changes.
-        root = self.directory / "checkout"
-        contract = root / "data" / CONTRACT.name
-        if not contract.exists():
-            self.script = root / "scripts" / SCRIPT.name
-            self.script.parent.mkdir(parents=True)
-            contract.parent.mkdir()
-            shutil.copyfile(SCRIPT, self.script)
-            shutil.copyfile(CONTRACT, contract)
-        sections = contract.read_text(encoding="utf-8").split("[[sources]]")
+        sections = self.contract.read_text(encoding="utf-8").split("[[sources]]")
         for index, section in enumerate(sections):
             if f'\nid = "{source}"\n' in section:
                 self.assertEqual(section.count(field_line), 1)
@@ -167,7 +175,7 @@ class DemographicCLITest(unittest.TestCase):
                 break
         else:
             self.fail(f"missing source section for {source}")
-        contract.write_text("[[sources]]".join(sections), encoding="utf-8")
+        self.contract.write_text("[[sources]]".join(sections), encoding="utf-8")
 
     def build(self, *args, **kwargs):
         return self.cli("build-us", "--output", self.output, *args, **kwargs)

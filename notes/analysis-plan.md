@@ -38,7 +38,7 @@ Freeze climate transformations, train-only scaling, lag choices, input vintages,
 
 ### Annual demographics
 
-The [2013–2019 source contract and workflow](demographic-sources-2013-2019.md) covers resident totals and ages 0–4. Synthetic fixtures exercise the US states/DC build and its controls. The 357-row build reconciled with the national and county totals from the three official Census CSVs staged on department. Will's next step is to check NY, NJ and DC against their same-release age-by-sex tables and verify the Japan and Puerto Rico file layouts and counts before locking the analysis inputs. Natality remains a separate source audit.
+The [2013–2019 source contract and workflow](demographic-sources-2013-2019.md) covers resident totals and ages 0–4. The official Japan files yielded 329 prefecture-years and the official Puerto Rico workbook matched the counts from all 78 municipios on all seven dates. The prior US state/DC check reconciled 357 rows against national and county controls. The DC, NJ and NY workbooks also agree for both counts on all 21 dates. Synthetic fixtures cover command behavior and failure checks. Will's next action is to lock the annual population inputs for analysis with Japan's published rounding and the remaining US Virgin Islands coverage gap recorded. Natality has its own [validation audit](natality-sources-2013-2019.md).
 
 ## Comparisons and interpretation
 
