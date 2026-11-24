@@ -53,7 +53,7 @@ The [2013–2019 source contract and workflow](demographic-sources-2013-2019.md)
 
 A first substantive result should explain what a shared or partially pooled climate response can account for across the initial two countries, how behavioural interpretations stand up to alternatives, and which features remain uncertain. Further countries strengthen this aim without being prerequisites for the first analysis.
 
-- **Will:** use the [weekly observation export](weekly-observations-2013-2019.md) and [surveillance audit](surveillance-audit-2013-2019.md) to specify observation models and testing and reporting sensitivities.
+- **Will:** the [aggregate observation interface](modelling-methodology.md#aggregate-observation-interface) now has synthetic Julia fixtures for Japan NB2 reported counts and US method-specific positivity. Specify which coverage or source flags warrant screening or sensitivity analysis, and document any externally supported Japan coverage adjustment before using it. The observation means, test-positive probabilities and dispersions are caller inputs. Their link to epidemiological quantities and the empirical choice of US likelihood remain open.
 - **Torkel:** prototype `climate_response(parameters, weather, context)` and the differentiable daily renewal recursion; compare an unrestricted joint response with one small behaviour-informed architecture on synthetic two-country data.
 - **Joint:** fix the first regions, behavioural hypotheses, baseline period, held-out design, and recovery criteria before fitting real outcomes.
 

@@ -23,3 +23,5 @@ jobs:
           version: ${{ matrix.julia-version }}
       - name: Load project
         run: julia --startup-file=no --project=. scripts/check_setup.jl
+      - name: Test synthetic package fixtures
+        run: julia --startup-file=no --project=. test/runtests.jl
