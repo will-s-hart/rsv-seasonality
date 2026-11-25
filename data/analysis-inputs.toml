@@ -13,7 +13,12 @@ publisher = "Japan Institute for Health Security (JIHS), final NESID/IDWR annual
 catalog_url = "https://id-info.jihs.go.jp/surveillance/idwr/annual/2024/archive/index.html"
 url_template = "https://id-info.jihs.go.jp/niid/images/idwr/ydata/{year}/Syuukei/Syu_{number}_{part}.{extension}"
 terms_url = "https://id-info.jihs.go.jp/usage-contract.html"
-vintage = "Final annual tables by diagnosis year. Exact workbook snapshot and retrieval dates are undocumented."
+vintage = "Final annual tables by diagnosis year"
+archive_index_posted = 2026-03-02
+final_workbook_posting_date_status = "undocumented"
+workbook_snapshot_date_status = "undocumented"
+retrieval_date_status = "undocumented"
+release_timing = "notes/surveillance-audit-2013-2019.md#japan-release-provenance"
 geography = "47 prefectures, with national controls"
 calendar = "Monday–Sunday local diagnosis weeks, inclusive"
 first_period_start = 2012-12-31
@@ -24,13 +29,57 @@ denominator = "Weekly designated paediatric sentinel sites, table 14-1. Sites ar
 weekly_rate_control = "Table 8-2 publishes weekly RSV rates in 2018–2019. Earlier files are pinned and lack RSV on the weekly rate sheets."
 annual_age_control = "Table 12-1 supplies annual age and sex counts. Weekly age counts are unavailable."
 
+[[surveillance.jp.annual_compilations]]
+diagnosis_year = 2013
+reporting_cutoff = 2014-10-19
+foreword_date = 2014-12-22
+foreword_url = "https://id-info.jihs.go.jp/niid/ja/allarticles/surveillance/5172-foward2013.html"
+
+[[surveillance.jp.annual_compilations]]
+diagnosis_year = 2014
+reporting_cutoff = 2015-10-25
+foreword_date = 2016-01-18
+foreword_url = "https://id-info.jihs.go.jp/niid/ja/allarticles/surveillance/6140-foward2014.html"
+
+[[surveillance.jp.annual_compilations]]
+diagnosis_year = 2015
+reporting_cutoff = 2016-10-23
+foreword_date = 2017-01-16
+foreword_url = "https://id-info.jihs.go.jp/niid/ja/allarticles/surveillance/6981-foward2015.html"
+
+[[surveillance.jp.annual_compilations]]
+diagnosis_year = 2016
+reporting_cutoff = 2017-10-28
+foreword_date = 2018-01-19
+foreword_url = "https://id-info.jihs.go/niid/ja/allarticles/surveillance/7780-foward2016.html"
+
+[[surveillance.jp.annual_compilations]]
+diagnosis_year = 2017
+reporting_cutoff = 2018-10-27
+foreword_date = 2019-02-01
+foreword_url = "https://id-info.jihs.go.jp/niid/ja/allarticles/surveillance/8562-foward2017.html"
+
+[[surveillance.jp.annual_compilations]]
+diagnosis_year = 2018
+reporting_cutoff = 2019-10-26
+foreword_date = 2020-02-03
+foreword_url = "https://id-info.jihs.go.jp/niid/ja/allarticles/surveillance/9079-foward2018.html"
+
+[[surveillance.jp.annual_compilations]]
+diagnosis_year = 2019
+reporting_cutoff = 2020-10-30
+foreword_date = 2021-01-25
+foreword_url = "https://id-info.jihs.go.jp/niid/ja/allarticles/surveillance/10117-foward2019.html"
+
 [surveillance.us]
 publisher = "US CDC, National Respiratory and Enteric Virus Surveillance System"
 catalog_url = "https://data.cdc.gov/Laboratory-Surveillance/Respiratory-Syncytial-Virus-Laboratory-Data-NREVSS/52kb-ccu2/about_data"
+catalogue_metadata_url = "https://data.cdc.gov/api/views/52kb-ccu2"
 url = "https://data.cdc.gov/resource/52kb-ccu2.csv?$limit=20000&$order=:id"
 dataset_id = "52kb-ccu2"
 reuse_terms = "Public Domain U.S. Government, per CDC catalogue"
 vintage = "2022 historical public-use export, July 2010–June 2020"
+catalogue_publication_date = 2022-10-21
 catalogue_data_updated = 2022-10-21
 retrieval_date_status = "undocumented"
 geography = "10 HHS regions. The participating laboratory panel and patient residence by jurisdiction are unobserved."
