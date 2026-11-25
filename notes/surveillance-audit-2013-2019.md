@@ -33,6 +33,22 @@ Project tabulation of the JIHS final tables, both sexes combined. All **17,155**
 | 2018 W08, 19–25 Feb | 1,141 and 0.36 | 1,147 ÷ 3,163 = 0.3626 |
 | 2018 W09, 26 Feb–4 Mar | 1,191 and 0.38 | 1,192 ÷ 3,162 = 0.3770 |
 
+### Japan release provenance
+
+The audited observation interval runs from the start of diagnosis week 2013 W01 (2012-12-31) through the end of 2019 W52 (2019-12-29), inclusive. Each annual foreword gives the cutoff for reports submitted by prefectures and designated cities and carries a separate date in its signature block. The inventory records both dates for each diagnosis year. JIHS says the annual compilation can differ from the weekly or monthly figures and can be revised after compilation. [Annual compilation dates and forewords](../data/analysis-inputs.toml).
+
+The final annual archive index lists the 2013–2019 editions as confirmed data. Its displayed publication date, 2026-03-02, applies to that index page. The first public posting dates of the individual final workbooks, their exact snapshot or revision dates, and the local retrieval dates of the pinned copies remain undocumented. The SHA-256 manifest identifies the audited bytes. The publisher page check on 25 November 2026 records when the metadata was reviewed. [JIHS final annual archive index](https://id-info.jihs.go.jp/surveillance/idwr/annual/2024/archive/index.html), [SHA-256 manifest](../scripts/surveillance_sources.sha256).
+
+The archived weekly pages explicitly give public posting dates for **preliminary** data. JIHS says those figures can be revised in the weekly report and again in the final annual report.
+
+| Diagnosis week | Inclusive observation interval | Preliminary posting date | JIHS archive page |
+| --- | --- | --- | --- |
+| 2013 W01 | 2012-12-31 to 2013-01-06 | 2013-01-15 | [2013 W01](https://id-info.jihs.go.jp/niid/ja/data/3064-idwr-sokuho-data-j-1301.html) |
+| 2016 W52 | 2016-12-26 to 2017-01-01 | 2017-01-13 | [2016 W52](https://id-info.jihs.go.jp/niid/ja/data/6998-idwr-sokuho-data-j-1652.html) |
+| 2017 W52 | 2017-12-25 to 2017-12-31 | 2018-01-12 | [2017 W52](https://id-info.jihs.go.jp/niid/ja/data/7755-idwr-sokuho-data-j-1752.html) |
+| 2018 W01 | 2018-01-01 to 2018-01-07 | 2018-01-17 | [2018 W01](https://id-info.jihs.go.jp/niid/ja/data/7759-idwr-sokuho-data-j-1801.html) |
+| 2019 W52 | 2019-12-23 to 2019-12-29 | 2020-01-15 | [2019 W52](https://id-info.jihs.go.jp/niid/ja/data/9289-idwr-sokuho-data-j-1952.html) |
+
 ## US historical NREVSS
 
 **Observation and denominator.** CDC dataset `52kb-ccu2` contains 10,313 aggregate rows, 5,210 PCR and 5,103 antigen, from July 2010 to June 2020. A row is diagnostic method × HHS region × reporting week, with positive detections `rsvpos`, total tests `rsvtest` and statistical flag `outlier`. The laboratory network is voluntary and includes hospital, public health and commercial labs. A person may account for multiple samples. The export has no patient demographics, lab identifiers, weekly lab counts, state rows or catchment sizes. Test positivity conditions on tests reported by laboratories, whose testing practices and service areas can change. Keep PCR and antigen numerators, denominators and flags separate. CDC documented a shift toward PCR and differences in method-specific positivity and season definitions. [CDC historical public-use dataset](https://data.cdc.gov/Laboratory-Surveillance/Respiratory-Syncytial-Virus-Laboratory-Data-NREVSS/52kb-ccu2/about_data), [CDC metadata and field definitions](https://data.cdc.gov/api/views/52kb-ccu2), [Midgley et al., CDC study](https://stacks.cdc.gov/view/cdc/50468), [CDC 2014–2017 analysis](https://www.cdc.gov/mmwr/volumes/67/wr/mm6702a4.htm).
@@ -56,6 +72,10 @@ Absent rows and explicit zero-test rows both lack a defined positivity, for diff
 - **PCR.** Midgley et al. counted 74 and 61 consistent PCR reporters nationally in 2012–13 and 2013–14. Of 135, 218 and 244 labs reporting at least one PCR week nationally in 2014–15, 2015–16 and 2016–17, respectively, 80, 108 and 118 qualified for CDC's analysis. Table 1 counts for candidate Regions 1, 2 and 5 were respectively 4/5/7, 6/8/7 and 22/29/28 over those three seasons. Maine, New Hampshire and Rhode Island lacked qualifying labs in all three. Under the later CDC analysis, Regions 1, 2 and 5 had respectively 9/10, 8/9 and 33/35 qualifying labs in 2017–18 and 2018–19. These filtered seasonal counts show variation across place and time. Weekly lab participation and weights for distributing observations within each HHS region remain unknown. [Midgley et al., Table 2](https://stacks.cdc.gov/view/cdc/50468), [CDC 2014–2017 Table 1](https://www.cdc.gov/mmwr/volumes/67/wr/mm6702a4.htm#T1_down), [CDC 2017–2023 table](https://www.cdc.gov/mmwr/volumes/72/wr/mm7214a1.htm#T1_down).
 
 The publications apply exclusions or separate strata for some states. The 2012–2014 report defines seasons using a 10% antigen positivity threshold. The 2014–2017 report uses a retrospective slope on smoothed and normalised PCR detections, and the 2017–2023 report uses a 3% PCR positivity threshold. Treat these as analysis rules and retain the weekly source fields. The aggregate file cannot reproduce those lab cohorts or state exclusions. Geographic weighting and reporting stability remain unresolved even for regions with a complete weekly grid. [HHS regional definitions](https://www.hhs.gov/about/agencies/iea/regional-offices/index.html), [CDC 2012–2014 methods](https://www.cdc.gov/mmwr/preview/mmwrhtml/mm6348a3.htm), [CDC 2014–2017 methods](https://www.cdc.gov/mmwr/volumes/67/wr/mm6702a4.htm), [CDC 2017–2023 methods](https://www.cdc.gov/mmwr/volumes/72/wr/mm7214a1.htm).
+
+### US release provenance
+
+CDC lists July 2010 through June 2020 as the public-use dataset's observation coverage. The audited MMWR subset covers the inclusive reporting interval 2012-12-30 through 2019-12-28. The catalogue's `publicationDate` (2022-10-21 13:28:24 UTC) and `rowsUpdatedAt` (2022-10-21 13:28:18 UTC) are separate dataset-level timestamps. The export's `source_vintage` records the date of the catalogue row update. A compilation cutoff, weekly public posting history, the exact revision date of the pinned CSV bytes and their original local retrieval date remain undocumented. [CDC catalogue metadata](https://data.cdc.gov/api/views/52kb-ccu2), [2013 MMWR week-ending log](https://ndc.services.cdc.gov/wp-content/uploads/2021/02/W2013-14.pdf), [2019 MMWR week-ending log](https://ndc.services.cdc.gov/wp-content/uploads/2021/02/W2018-19.pdf).
 
 ## Date alignment and analysis decisions
 

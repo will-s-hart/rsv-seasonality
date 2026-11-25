@@ -70,7 +70,7 @@ Japan diagnosis weeks run Monday through Sunday. They use the ISO week conventio
 | Japan 2017 W52 (`５２週`) | 2017-12-25 | 2017-12-31 |
 | US 2018 W01 (`1801`) | 2017-12-31 | 2018-01-06 |
 
-The fixtures check that Japan 2017 W52 and US 2018 W01 both include 31 December 2017, their only shared date. The export supports retrospective evaluation only. Establishing what data were available at a given week end requires historical release records. For example, Japan's 2018 W01 ended on 7 January 2018, and the official preliminary surveillance table was updated on 17 January 2018. [JIHS preliminary 2018 W01 table](https://id-info.jihs.go.jp/niid/ja/data/7759-idwr-sokuho-data-j-1801.html).
+The fixtures check that Japan 2017 W52 and US 2018 W01 both include 31 December 2017, their only shared date. The export supports retrospective evaluation only. Establishing what data were available at a given week end requires historical release records. Japan's archived preliminary postings and annual compilation cutoffs document separate events. CDC provides catalogue timestamps for its historical public-use dataset. [Japan release provenance](surveillance-audit-2013-2019.md#japan-release-provenance), [US release provenance](surveillance-audit-2013-2019.md#us-release-provenance).
 
 ## Check candidate calendar cutoffs
 
