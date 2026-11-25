@@ -57,6 +57,8 @@ CDC's flag identifies extreme weekly counts of tests or detections under its thr
 
 All NESID observations have a numeric case count and a positive sentinel count. The antigen gaps comprise three weeks in HHS Region 2 and 78 weeks in Region 8. Four zero-test rows occur in each of Regions 2 and 7. [Audit coverage and dates](surveillance-audit-2013-2019.md#us-historical-nrevss).
 
+For a table by source, method, region and source week year, use the [coverage summary command and provisional reporting QA](weekly-reporting-qa-2013-2019.md).
+
 ## Week boundaries and release timing
 
 Japan diagnosis weeks run Monday through Sunday. They use the ISO week convention in this window. US MMWR reporting weeks run Sunday through Saturday, with week 1 containing the first Wednesday of the year. Dates belong to their respective source calendars. [JIHS 2014–2018 calendar](https://id-info.jihs.go.jp/surveillance/idwr/annual/2022/archive/14-18calendar.gif), [CDC MMWR week rules](https://ndc.services.cdc.gov/wp-content/uploads/2021/02/MMWR_Week_overview.pdf), [CDC 2014–2015 calendar](https://ndc.services.cdc.gov/wp-content/uploads/2021/02/W2014-15.pdf), [CDC 2018–2019 calendar](https://ndc.services.cdc.gov/wp-content/uploads/2021/02/W2018-19.pdf).

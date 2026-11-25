@@ -15,6 +15,7 @@ import export_weekly_observations as export
 
 
 FULLWIDTH_DIGITS = str.maketrans("0123456789", "０１２３４５６７８９")
+COVERAGE_SCRIPT = Path(__file__).with_name("summarize_weekly_coverage.py")
 
 
 @contextmanager
@@ -65,6 +66,7 @@ def write_nrevss_fixture(directory):
             ("Antigen", "06JAN2018", "1801", 2, 0, 0, 0),
             ("Antigen", "13JAN2018", "1802", 2, 0, 12, 1),
             ("Antigen", "20JAN2018", "1803", 2, 3, 10, 0),
+            ("Antigen", "06JAN2018", "1801", 7, 0, 0, 1),
             ("PCR", "06JAN2018", "1801", "National", 301, 801, 0),
             ("Antigen", "04JAN2020", "2001", 2, 0, 12, 0),
         ))
@@ -147,6 +149,62 @@ class ExportTests(unittest.TestCase):
                 self.assertEqual(row["denominator_kind"], "reported_tests")
                 self.assertEqual(row["source_vintage"], "2022-10-21")
                 self.assertEqual(row["region_label"], "HHS Region 2")
+
+    def test_coverage_summary_cli_counts_synthetic_export_without_modifying_it(self):
+        with TemporaryDirectory() as temporary:
+            path = Path(temporary) / "synthetic-weekly.csv"
+            path.write_bytes(self.csv_bytes)
+            command = [sys.executable, "-B", str(COVERAGE_SCRIPT), str(path)]
+            result = subprocess.run(command, capture_output=True, text=True, check=True)
+            replay = subprocess.run(command, capture_output=True, text=True, check=True)
+            self.assertEqual(result.stdout, replay.stdout)
+            self.assertEqual(path.read_bytes(), self.csv_bytes)
+
+        fields = ("input_rows", "present_rows", "absent_rows", "zero_reports", "tested_rows",
+                  "zero_test_rows", "zero_detection_rows", "flagged_tested_rows",
+                  "flagged_zero_test_rows", "positive_denominator_min",
+                  "positive_denominator_median", "positive_denominator_max")
+        groups = {
+            (row["source_id"], row["method"], row["region_id"], row["source_week_year"]): row
+            for row in csv.DictReader(StringIO(result.stdout))
+        }
+        self.assertEqual(len(groups), 469)
+        self.assertEqual(sum(int(row["input_rows"]) for row in groups.values()), 24455)
+        for key, expected in (
+            (("NESID", "", "01", "2015"),
+             ("53", "53", "0", "53", "", "", "", "", "", "27", "27", "28")),
+            (("NREVSS:52kb-ccu2", "PCR", "2", "2018"),
+             ("52", "52", "0", "", "52", "0", "0", "1", "0", "8", "8.0", "8")),
+            (("NREVSS:52kb-ccu2", "Antigen", "2", "2018"),
+             ("52", "3", "49", "", "2", "1", "1", "1", "0", "10", "11.0", "12")),
+            (("NREVSS:52kb-ccu2", "Antigen", "7", "2018"),
+             ("52", "1", "51", "", "0", "1", "0", "0", "1", "", "", "")),
+            (("NREVSS:52kb-ccu2", "Antigen", "8", "2019"),
+             ("52", "0", "52", "", "0", "0", "0", "0", "0", "", "", "")),
+        ):
+            with self.subTest(key=key):
+                self.assertEqual(tuple(groups[key][field] for field in fields), expected)
+
+    def test_coverage_summary_cli_rejects_invalid_rows(self):
+        absent = self.by_key["NREVSS:52kb-ccu2", "Antigen", "2", "2018", "1804"]
+        for rows, expected in (
+            ([{**absent, "denominator": "0"}], "expected an absent antigen row"),
+            ([{**absent, "source_week_code": ""}], "missing observation key field"),
+            ([absent, absent], "duplicate observation key"),
+        ):
+            with self.subTest(expected=expected), TemporaryDirectory() as temporary:
+                path = Path(temporary) / "synthetic-weekly.csv"
+                with path.open("w", encoding="utf-8", newline="") as stream:
+                    writer = csv.DictWriter(stream, fieldnames=export.Observation._fields)
+                    writer.writeheader()
+                    writer.writerows(rows)
+                result = subprocess.run(
+                    [sys.executable, "-B", str(COVERAGE_SCRIPT), str(path)],
+                    capture_output=True, text=True,
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(result.stdout, "")
+                self.assertIn(expected, result.stderr)
 
     def test_missing_japan_count_or_site_denominator_is_rejected(self):
         for field in ("count", "site"):
