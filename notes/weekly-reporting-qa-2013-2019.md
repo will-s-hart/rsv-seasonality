@@ -1,6 +1,6 @@
 # Weekly RSV coverage and reporting QA, 2013–2019
 
-These are provisional QA recommendations for the pinned public aggregate weekly series. The empirical coverage counts below come from the prior source audit and export verification. The new summary command was checked in Cloud on synthetic inputs. [Source audit](surveillance-audit-2013-2019.md), [weekly export](weekly-observations-2013-2019.md), [official input verification](analysis-plan.md#audited-analysis-input-manifest).
+These are provisional QA recommendations for the pinned public aggregate weekly series. The coverage counts below come from the source audit and export verification. Cloud checks of the summary command used synthetic inputs. [Source audit](surveillance-audit-2013-2019.md), [weekly export](weekly-observations-2013-2019.md), [official input verification](analysis-plan.md#audited-analysis-input-manifest).
 
 ## Weekly observation flags
 
@@ -31,3 +31,11 @@ python -B scripts/summarize_weekly_coverage.py data/processed/weekly_observation
 The read-only command writes CSV to stdout, with one row per source, method, region and source week year. `input_rows` includes explicit absent antigen grid rows. `zero_reports` counts NESID zero notifications. For NREVSS, `zero_detection_rows` counts tested weeks with zero detections, and the two `flagged_*` columns cross the native flag with tested and zero-test coverage states. Within each stream, the positive-denominator minimum, median and maximum use paediatric sites for NESID and reported tests for NREVSS. Inapplicable fields and summaries with no positive denominator are blank. The yearly grouping uses source week labels, independent of the CDC flag's surveillance-year grouping.
 
 The report summarizes supplied rows. Use the upstream checksum-verified exporter for the full grid and source provenance. For saved tables, record the input CSV digest, code commit and whether the input was official or synthetic. The [synthetic exporter fixtures](../scripts/test_export_weekly_observations.py) exercise the same summary command, including a flagged zero-test row and an all-absent group. Fixture counts describe the test data. [Result conventions](../results/README.md).
+
+### 25 November 2026 reproducibility record
+
+An independent read-only replay on the department system at commit `aa2523ee80e836d13c9417e1f1f53db1d55bf500` verified all 29 pinned surveillance inputs and passed all 95 Python tests. Two weekly exports were byte-identical, as were two coverage summaries. Independent calculations matched all 12 statistics in each of the 469 summary groups and reconciled seven Japan annual controls and all 7,219 source-present US rows.
+
+The export contained 24,455 grid rows. Positivity was blank for all 81 structurally absent US antigen weeks and all eight source-present antigen weeks with zero tests. Tested weeks with zero detections had numeric zero positivity.
+
+The replay establishes coverage for the pinned aggregate inputs. The exact release, revision and retrieval dates of the pinned Japan workbooks and historical CDC weekly posting dates remain unverified. [Japan release provenance](surveillance-audit-2013-2019.md#japan-release-provenance), [US release provenance](surveillance-audit-2013-2019.md#us-release-provenance).
