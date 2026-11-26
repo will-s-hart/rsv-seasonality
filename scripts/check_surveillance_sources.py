@@ -323,34 +323,38 @@ def nrevss_week_ends():
 
 
 def read_nrevss(directory):
+    with (directory / CDC_EXPORT).open(newline="", encoding="utf-8") as stream:
+        return parse_nrevss(csv.DictReader(stream))
+
+
+def parse_nrevss(rows):
     weeks = set(nrevss_week_ends())
     groups = {(method, region): {} for method in NREVSS_METHODS for region in HHS_REGIONS}
     region_codes = {str(region): region for region in HHS_REGIONS}
     codes = {}
     export_rows = Counter()
-    with (directory / CDC_EXPORT).open(newline="", encoding="utf-8") as stream:
-        for row in csv.DictReader(stream):
-            method = row["testtype"]
-            export_rows[method] += 1
-            raw_date = row["repweekdate"]
-            require(
-                re.fullmatch(r"[0-9]{2}[A-Z]{3}[0-9]{4}", raw_date),
-                f"Invalid report date {raw_date!r}",
-            )
-            week_end = date(int(raw_date[5:]), MONTHS.index(raw_date[2:5]) + 1, int(raw_date[:2]))
-            code = row["repweekcode"]
-            expected = mmwr_week_code(week_end)
-            require(code == expected, f"{raw_date}: expected MMWR week code {expected}, got {code!r}")
-            region = region_codes.get(row["hhs_region"])
-            group = method, region
-            if week_end not in weeks or group not in groups:
-                continue
-            label = f"{group} {week_end}"
-            require(week_end not in groups[group], f"{label} invalid or duplicate week")
-            codes[week_end] = code
-            positive, tested, outlier = (int(row[field]) for field in ("rsvpos", "rsvtest", "outlier"))
-            require(0 <= positive <= tested and outlier in (0, 1), f"{label} invalid counts or flag")
-            groups[group][week_end] = positive, tested, outlier
+    for row in rows:
+        method = row["testtype"]
+        export_rows[method] += 1
+        raw_date = row["repweekdate"]
+        require(
+            re.fullmatch(r"[0-9]{2}[A-Z]{3}[0-9]{4}", raw_date),
+            f"Invalid report date {raw_date!r}",
+        )
+        week_end = date(int(raw_date[5:]), MONTHS.index(raw_date[2:5]) + 1, int(raw_date[:2]))
+        code = row["repweekcode"]
+        expected = mmwr_week_code(week_end)
+        require(code == expected, f"{raw_date}: expected MMWR week code {expected}, got {code!r}")
+        region = region_codes.get(row["hhs_region"])
+        group = method, region
+        if week_end not in weeks or group not in groups:
+            continue
+        label = f"{group} {week_end}"
+        require(week_end not in groups[group], f"{label} invalid or duplicate week")
+        codes[week_end] = code
+        positive, tested, outlier = (int(row[field]) for field in ("rsvpos", "rsvtest", "outlier"))
+        require(0 <= positive <= tested and outlier in (0, 1), f"{label} invalid counts or flag")
+        groups[group][week_end] = positive, tested, outlier
     for region in HHS_REGIONS:
         pcr = groups["PCR", region]
         require(
