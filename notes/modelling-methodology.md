@@ -40,6 +40,8 @@ Use the NB2 convention `Var(Y) = mu + mu^2 / phi`. Observation-specific delays d
 
 Positivity needs positive and tested counts with a binomial/beta-binomial observation model and assumptions about selection into testing, including non-RSV illness where relevant. Denominators help quantify testing but do not identify infection attack rates. Use source-specific observation models, including age composition where possible: paediatric sentinel consultations and all-age laboratory detections are not interchangeable. Choose a second country with usable observations before joint empirical fitting; unresolved access should trigger a different comparator, not a single-country primary analysis.
 
+For US NREVSS, the fixed annual cross-assay contrast can exceed the hypothetical independent-row test-count SD ceiling. Its scale relative to the ceiling depends on how the reporting rows may covary. Will's next observation validation step is to establish what stable-contributor and assay-overlap summaries can constrain about reporting dependence and changes in testing eligibility. [Annual assay contrast uncertainty](nrevss-annual-assay-uncertainty-2013-2019.md)
+
 ### Aggregate observation interface
 
 The Julia package evaluates one weekly surveillance observation at a time. The constructors and likelihood parameters are exercised with synthetic fixtures.
