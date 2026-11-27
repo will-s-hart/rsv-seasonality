@@ -40,6 +40,10 @@ Freeze climate transformations, train-only scaling, lag choices, input vintages,
 
 The [2013–2019 source contract and workflow](demographic-sources-2013-2019.md) covers resident totals and ages 0–4. The official Japan files yielded 329 prefecture-years and the official Puerto Rico workbook matched the counts from all 78 municipios on all seven dates. The prior US state/DC check reconciled 357 rows against national and county controls. The DC, NJ and NY workbooks also agree for both counts on all 21 dates. Japan's published rounding and the US Virgin Islands coverage gap are recorded in the audited input manifest. Natality has its own [validation audit](natality-sources-2013-2019.md).
 
+### Annual NREVSS reported PCR positivity
+
+The empirical [annual weighting decomposition](nrevss-annual-weighting-2013-2019.md) and independent replay agree on the SHA-pinned CDC export. Global count pooling raised reported PCR positivity by 1.278–3.547 percentage points across the seven calendar years. Within-region test-volume weighting accounted for the larger contribution every year, including on matched Saturday ordinal support. Will can use these contrasts to interpret the annual surveillance summaries. The empirical US likelihood choice remains open.
+
 ## Comparisons and interpretation
 
 - Compare simple climate curves and splines against the main joint neural response and a behaviour-informed response with a learned low-amplification region. Include a calendar-forcing reference within the same renewal backbone. Test temperature–humidity interactions and modest adaptation shifts; do not require a double peak in every country.
