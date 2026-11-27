@@ -31,6 +31,17 @@ universe = "resident population, all sexes"
 locations = 1
 expected_rows = 7
 
+[sensitivity.vi_idb]
+vintage = "November 2026 Release"
+url = "https://www.census.gov/data-tools/demo/data/idb/dataset/idbzip.zip"
+catalog_url = "https://www.census.gov/programs-surveys/international-programs/data/tools/international-data-base/idb-release-notes/2026.html"
+expected_sha256 = "d6c64e0a0dbfb3ae8e3c819476a043b9844ea3c2c30b92d53a305ec6f6eb5cff"
+geo_id = "W140000WOVI"
+ber_url = "https://usviber.org/wp-content/uploads/2022/12/econ-21.pdf"
+ber_resident_totals = [104761, 102008, 100768, 97373, 96815, 96211, 95668] # 2013–2019
+census_url = "https://www.census.gov/newsroom/press-releases/2021/2020-census-us-virgin-islands.html"
+census_april_1_totals = {2010 = 106405, 2020 = 87146}
+
 # The optional expected_sha256 field belongs to the source entry after empirical review.
 # With no pin, the local receipt records the observed digest and leaves it unpinned.
 

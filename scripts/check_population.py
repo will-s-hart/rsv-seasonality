@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the staged Japan and Puerto Rico panels and selected US workbooks."""
+"""Validate demographic panels, workbooks and the U.S. Virgin Islands IDB sensitivity."""
 
 import argparse
 import csv
@@ -29,6 +29,7 @@ from demographic_sources import (
     write_panel,
 )
 from japan_population import PREFECTURES, read_japan
+from vi_idb import check_vi_idb
 
 PANEL_FIELDS = (*POPULATION_FIELDS, "control_sources")
 PR_WORKBOOK = "pr-commonwealth"
@@ -219,6 +220,8 @@ def main():
             "--output", type=Path, default=ROOT / "data/processed/demography" / f"{panel}-population.csv",
         )
     commands.add_parser("check-us-workbooks", help="check DC, NJ and NY against same-release workbooks")
+    vi_idb = commands.add_parser("check-vi-idb", help="verify and compare U.S. Virgin Islands IDB estimates")
+    vi_idb.add_argument("--archive", required=True, type=Path, help="path to the original Census IDB ZIP")
     args = parser.parse_args()
     contract, sources = load_contract()
     if args.command == "build-jp":
@@ -231,6 +234,8 @@ def main():
     elif args.command == "build-pr":
         count = build_pr(args.cache_dir, args.output, contract["panels"]["pr"], sources)
         print(f"{count} Puerto Rico commonwealth rows match the sums of all 78 municipios")
+    elif args.command == "check-vi-idb":
+        check_vi_idb(args.archive, contract["sensitivity"]["vi_idb"])
     else:
         count = check_us_workbooks(args.cache_dir, sources)
         print(f"{count} DC, NJ and NY rows match the official state age-by-sex workbooks")

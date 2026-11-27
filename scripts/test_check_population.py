@@ -26,7 +26,7 @@ class PopulationCLITest(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
         self.scripts = self.root / "checkout" / "scripts"
-        fixture_checkout(self.scripts.parent, "check_population.py", "japan_population.py")
+        fixture_checkout(self.scripts.parent, "check_population.py", "japan_population.py", "vi_idb.py")
         self.cache = self.root / "raw"
         self.output = self.root / "processed" / "puerto-rico.csv"
 
