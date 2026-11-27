@@ -37,7 +37,7 @@ def eligible(row):
     return row is not None and row[1] > 0
 
 
-def summarize_year(week_rows, support, ranks):
+def summarize_year(week_rows, support, ranks, *, exact=False):
     # Each position is the same Saturday ordinal across regions and years.
     source_rows = [row for weeks in week_rows for row in weeks]
     region_rows = [[row for rank, row in enumerate(weeks) if rank in ranks and eligible(row)]
@@ -68,11 +68,12 @@ def summarize_year(week_rows, support, ranks):
                  for rows in region_rows)
         c = Fraction(detections, tests)
         rates = (a, b, c, b - a, c - b, c - a)
-        result.update({field: decimal(100 * rate) for field, rate in zip(RATE_FIELDS, rates)})
+        result.update({field: 100 * rate if exact else decimal(100 * rate)
+                       for field, rate in zip(RATE_FIELDS, rates)})
     return result
 
 
-def annual_summaries(pcr, years):
+def annual_summaries(pcr, years, *, exact=False):
     grids = {}
     for year in years:
         weeks = calendar_weeks(year)
@@ -83,24 +84,26 @@ def annual_summaries(pcr, years):
     ]
     matched = set.intersection(*complete_ranks)
     for year, grid in grids.items():
-        yield {"calendar_year": year, **summarize_year(grid, "baseline", range(len(grid[0])))}
-        yield {"calendar_year": year, **summarize_year(grid, "matched", matched)}
+        yield {"calendar_year": year,
+               **summarize_year(grid, "baseline", range(len(grid[0])), exact=exact)}
+        yield {"calendar_year": year, **summarize_year(grid, "matched", matched, exact=exact)}
 
 
-def write_summary(path, output):
+def write_summary(path, output, *, exact=False):
     groups, _ = load_pinned_groups(path)
     pcr = [groups["PCR", region] for region in audit.HHS_REGIONS]
     writer = csv.DictWriter(output, fieldnames=FIELDS, lineterminator="\n")
     writer.writeheader()
-    writer.writerows(annual_summaries(pcr, audit.YEARS))
+    writer.writerows(annual_summaries(pcr, audit.YEARS, exact=exact))
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("csv", type=Path, help="original nrevss.csv matching the repository SHA-256 pin")
+    parser.add_argument("--exact", action="store_true", help="write rates and gaps as rational numbers")
     args = parser.parse_args()
     try:
-        write_summary(args.csv, sys.stdout)
+        write_summary(args.csv, sys.stdout, exact=args.exact)
     except (OSError, ValueError, KeyError, csv.Error) as error:
         parser.exit(1, f"{parser.prog}: {error}\n")
 

@@ -1,5 +1,6 @@
 import csv
 from datetime import date, timedelta
+from fractions import Fraction
 from hashlib import sha256
 from io import StringIO
 from pathlib import Path
@@ -82,6 +83,11 @@ class WeightingCLI(unittest.TestCase):
             self.assertEqual(subprocess.check_output(command, text=True), actual)
             self.assertEqual(source.read_bytes(), original)
             rows = {(row["calendar_year"], row["support"]): row for row in csv.DictReader(StringIO(actual))}
+            exact = subprocess.check_output([*command, "--exact"], text=True)
+            exact_rows = {(row["calendar_year"], row["support"]): row
+                          for row in csv.DictReader(StringIO(exact))}
+            self.assertEqual(Fraction(exact_rows["2015", "matched"]["a_equal_week_region_pct"]), Fraction(3, 52))
+            self.assertEqual(Fraction(exact_rows["2015", "matched"]["c_pooled_all_pct"]), Fraction(5, 29))
             self.assertEqual(len(rows), 14)
             self.assertEqual(sum(int(rows[str(year), "baseline"]["retained_rows"]) for year in audit.YEARS), 3650)
             self.assertEqual({rows[str(year), "matched"]["retained_rows"] for year in audit.YEARS}, {"520"})

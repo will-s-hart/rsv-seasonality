@@ -46,6 +46,10 @@ The empirical [annual weighting decomposition](nrevss-annual-weighting-2013-2019
 
 The [adjacent-year PCR and antigen comparison](nrevss-adjacent-assay-agreement-2013-2019.md) found directional agreement in five of six pooled contrasts and two of six equal-weight contrasts on positive-denominator support. Equal-weight agreement rose to five of six on the 100-test screen, which kept about half the cells. Will's next observation-validation question is whether agreement persists among stable contributors under comparable testing eligibility. This requires linked contributor metadata or an overlapping reference beyond the aggregate export.
 
+### Annual Japan and US reporting directions
+
+The [national annual direction comparison](japan-us-annual-reporting-directions-2013-2019.md) found one agreement and one disagreement that survive both Japan's audited site-week bounds and US weighting. One pair is indeterminate under the Japan denominator bounds, and three depend on US weighting. The measures remain source-specific. The next shared provenance dependency is Torkel's independently versioned and checksum-pinned climate inputs for both countries.
+
 ## Comparisons and interpretation
 
 - Compare simple climate curves and splines against the main joint neural response and a behaviour-informed response with a learned low-amplification region. Include a calendar-forcing reference within the same renewal backbone. Test temperature–humidity interactions and modest adaptation shifts; do not require a double peak in every country.
