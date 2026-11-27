@@ -56,19 +56,31 @@ The September 30, 2025 Census release includes the commonwealth age-by-sex workb
 | 10 | 2018-07-01 |
 | 11 | 2019-07-01 |
 
-The official files produced 546 unique target municipio-years. `UNDER5_TOT` and `AGE04_TOT` agreed for every record in that window. The sums of `POPESTIMATE` and ages 0–4 matched the commonwealth workbook in persons for all seven dates. The output is a separate commonwealth series. U.S. Virgin Islands population remains outside the verified geography, so full HHS Region 2 population coverage remains open.
+The official files produced 546 unique target municipio-years. `UNDER5_TOT` and `AGE04_TOT` agreed for every record in that window. The sums of `POPESTIMATE` and ages 0–4 matched the commonwealth workbook in persons for all seven dates. The output is a separate commonwealth series. The U.S. Virgin Islands sensitivity below uses a separate source. Full HHS Region 2 population coverage remains open.
 
 ### U.S. Virgin Islands
 
-On 27 November 2026 at 10:53 UTC, a bounded GET of the official IDB bulk archive from the saved Cloud environment stopped with curl exit 56 and `CONNECT tunnel failed, response 403`. Curl reported HTTP `000` and zero download bytes. The archive member definitions and vintage in the bytes, SHA-256, seven unique 2013–2019 territory records, and an independent age-band reconciliation remain unverified. The November 2026 release notes list `VI` among the updated areas. The five-year API documents `POP` as midyear population and `POP0_4` as total midyear population ages 0–4. A data query requires an API key. [Bulk archive](https://www.census.gov/data-tools/demo/data/idb/dataset/idbzip.zip), [November 2026 release notes](https://www.census.gov/programs-surveys/international-programs/data/tools/international-data-base/idb-release-notes/2026.html), [API variables](https://api.census.gov/data/timeseries/idb/5year/groups/IDB5YEAR.html), [API access requirements](https://api.census.gov/data/timeseries/idb/5year/examples.html).
+The first bounded GET after `www.census.gov` was allowed in the saved Cloud environment started at 13:18:46 UTC on 27 November 2026. The configured proxy returned CONNECT 200 and the archive returned HTTP 200 with 85,513,455 bytes, no redirects and a November 5 Last-Modified date. The prior 10:53 UTC attempt stopped at CONNECT 403. The received `readme.txt` identifies the archive as the **November 2026 Release**, and Census lists GENC `VI` among the revised areas. The [source contract](../data/demographic-sources.toml) pins the archive SHA-256 under `sensitivity.vi_idb`. [Bulk archive](https://www.census.gov/data-tools/demo/data/idb/dataset/idbzip.zip), [release notes](https://www.census.gov/programs-surveys/international-programs/data/tools/international-data-base/idb-release-notes/2026.html).
 
-| Comparison source | Year | Total | Ages 0–4 |
+The pipe-delimited `idb5yr.txt` has one `W140000WOVI` row per July 1 in 2013–2019. The both-sex `POP` and `POP0_4` fields are counts in persons. Each year has all 101 single-age cells (0 through 100+) for each sex code in `idbsingleyear.txt`. Code 0 is both sexes and checks against the sum of codes 1 and 2 at every age. The disjoint age bands and all-age total match the corresponding single-age sums exactly, including ages 0 through 4. The overlapping 80+ subtotal is excluded from the disjoint bands. This agreement checks the archive's internal consistency. The IDB estimates draw on census and other inputs and use cohort-component methods for the Island Areas. [IDB July 1 and sex definitions](https://www.census.gov/data/developers/data-sets/international-database.html), [five-year variables](https://api.census.gov/data/timeseries/idb/5year/groups/IDB5YEAR.html), [Island Areas methods](https://www.census.gov/programs-surveys/international-programs/about/idb/island-areas.html).
+
+The July 2022 territorial Bureau of Economic Research (BER) table reports annual resident totals and flags 2016–2017 as estimates. It gives no within-year reference date for the annual population row. Compared by calendar year, the IDB total is lower in all seven years, by 1.52%, 0.98%, 1.88%, 0.65%, 2.42%, 4.29% and 6.33%, respectively, using BER as the reference. From 2013 to 2019 the IDB total falls from 103,173 to 89,611 (13.14%), and BER falls from 104,761 to 95,668 (8.68%). The IDB decline is 4.47 percentage points steeper, and the IDB 2019-to-2013 denominator ratio is 0.951 times the BER ratio. These differences describe sensitivity to these population series for a conditional territory-wide denominator. [BER annual indicators, pp. 1–2](https://usviber.org/wp-content/uploads/2022/12/econ-21.pdf).
+
+| Previously documented reference | Year | Total | Ages 0–4 |
 | --- | ---: | ---: | ---: |
 | [University of the Virgin Islands Community Survey](https://www.uvi.edu/research/eastern-caribbean-center/files/pdfs/VICS_2015.pdf), survey estimate supplied for comparison | 2015 | 100,768 | 5,241 |
 | [2010 Census demographic profile](https://www.uvi.edu/files/documents/Research_and_Public_Service/ECC/SRI/2010%20USVI%20Census%20Dempgraphic%20Prof%20Printable.pdf), April 1 count | 2010 | 106,405 | 7,500 |
 | [2020 Census demographic profile DP1](https://data.census.gov/cedsci/table?d=DECIA+U.S.+Virgin+Islands+Demographic+Profile&g=0400000US78&tid=DECENNIALDPVI2020.DP1), April 1 count | 2020 | 87,146 | 4,468 |
 
-The local bureau annual resident totals of 104,761 in 2013 and 95,668 in 2019 provide total-only comparisons. These reference values leave the November 2026 IDB annual midyear series unverified. [U.S. Virgin Islands Bureau of Economic Research annual indicators](https://usviber.org/wp-content/uploads/2022/12/econ-21.pdf).
+The IDB 2015 total of 98,875 is 1.88% below the documented survey total, which is also the BER total for that year. The survey reference date and population universe have not been reconciled to IDB July 1. The April 1 enumeration totals bracket the analysis window. The same-year July 1 IDB totals were 108,359 in 2010 (+1.84% relative to the April count) and 87,098 in 2020 (−0.06%). The different dates and possible shared census inputs limit interpretation of these differences. [Decennial counts](https://www.census.gov/newsroom/press-releases/2021/2020-census-us-virgin-islands.html), [University of the Virgin Islands survey catalogue](https://www.uvi.edu/research/eastern-caribbean-center/documents.html).
+
+Within IDB, ages 0–4 decline from 7,064 to 5,026 (28.85%) and their share falls from 6.85% to 5.61% (1.24 percentage points). The all-age trend alone therefore understates the decline in the IDB child count. The earlier age references lack an equivalent July 1 comparison. NREVSS reporting coverage, the audited input freeze and the joint geography decision remain open.
+
+Run the check against the original ZIP saved outside the checkout. It verifies the pin before opening either data member and prints the annual comparison to stdout.
+
+```sh
+python3 -B scripts/check_population.py check-vi-idb --archive /path/to/idbzip.zip
+```
 
 ## Reproduce locally
 
