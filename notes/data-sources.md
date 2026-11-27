@@ -51,6 +51,24 @@ CDS requires account/token and manual dataset-terms acceptance; current catalogu
 
 Derive humidity **hourly before spatial/weekly averaging**: vapour pressure `e = es(Td)`, `RH = 100e/es(T)`, absolute humidity `e/(Rv*T_kelvin)` using consistent SI units, specific humidity `q = 0.622e/(p − 0.378e)`. Document water/ice convention. Compare temperature plus one humidity measure; humidity measures are mathematically related. [ECMWF example](https://era-explorer.climate.copernicus.eu/notebooks/content/humidity/humidity_monthly_climatology.html). Align actual local week boundaries; US weeks end Saturday, unlike Japanese reporting weeks. Preserve week 53.
 
+### ERA5 inventory gap check, 27 November 2026
+
+Checked the supplied snapshot at `9ace6eb332cd601d57254ad3faf9757593fbf05d` for issue #22. The [analysis input manifest](../data/analysis-inputs.toml) explicitly records `unresolved.climate.status = "missing"` and contains no locked ERA5 artifacts. The catalogue specification above is the planned source; it does not establish an acquired Japan or US release. The source notes record no climate retrieval.
+
+| Requested provenance | Japan | United States |
+| --- | --- | --- |
+| Dataset/release | Planned ERA5 single levels; acquired release/version unrecorded | Planned ERA5 single levels; acquired release/version unrecorded |
+| Variables and units | Planned 2 m temperature and dewpoint (K), surface pressure (Pa); no artifact metadata verified | Same planned fields; no artifact metadata verified |
+| Date coverage | Target 2013–2019; actual climate timestamps unverified | Target 2013–2019; actual climate timestamps unverified |
+| Checksum evidence | No ERA5 artifact digests or receipt-derived metadata recorded | No ERA5 artifact digests or receipt-derived metadata recorded |
+| Spatial processing | Prefecture selection, boundary/weight inputs and transformations unpinned | HHS region selection, boundary/weight inputs and transformations unpinned |
+
+Precipitation is included in the analysis plan but optional in the source shortlist. Its inclusion, native units and accumulation convention need an explicit decision. The suggested processed precipitation unit is mm; this is not verified source metadata. Humidity derivation, water/ice convention, local-time alignment and aggregation also remain to be implemented and pinned.
+
+The surveillance manifest gives Japan's inclusive local observation interval as **2012-12-31–2019-12-29** and the US interval as **2012-12-30–2019-12-28**. A January 2013 climate start would therefore omit part of each first observation week. These dates describe observation support, not available ERA5 coverage. Freeze the corresponding hourly UTC coverage and any earlier lag/initialisation buffer after agreeing local-time handling.
+
+**Next action — Torkel:** identify any existing acquisitions and provide public-safe metadata for each country's artifacts: stable dataset URL, acquired release/product/grid, variable names and native units, exact timestamp coverage, retrieval date, licence/attribution and SHA-256 digests checked against preserved bytes. Retain original acquisition receipts privately. If acquisitions do not exist, retrieve a documented pilot for both countries using the existing project environment before claiming coverage; package changes remain with Torkel. Pin boundary and weight sources and Julia transformation code before panel assembly. Stage 1 remains open.
+
 ## Adaptation, behaviour and feasibility gate
 
 Population and age structure: [Japan Statistics Bureau](https://www.stat.go.jp/english/data/jinsui/2.html) and [US Census population estimates](https://www.census.gov/programs-surveys/popest.html). Add school/childcare calendars and regional testing-policy metadata. Optional adaptation proxies include US [2015 RECS](https://www.eia.gov/consumption/residential/data/2015/) heating/cooling and appliance-use surveys, Japanese [Consumer Confidence Survey durable-goods tables](https://www.esri.cao.go.jp/jp/stat/shouhi/honbun202403.pdf) with historical air-conditioner adoption, and [time-use surveys](https://www.stat.go.jp/english/data/shakai/index.html). Canada [Households and Environment Survey](https://www.statcan.gc.ca/o1/en/plus/4034-air-conditioning-more-canadians-keep-cool-costs-heat) offers provincial AC context if added. Match reference years and geography to the analysis period. These sparse proxies are not measured weekly indoor humidity, ventilation or contact rates; use as context/effect modifiers with uncertainty. Weather-driven behaviour remains part of the climate-associated transmission relationship.

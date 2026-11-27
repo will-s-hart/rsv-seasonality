@@ -32,10 +32,13 @@ julia --startup-file=no --project=. test/runtests.jl
 | Path | Purpose |
 | --- | --- |
 | `notes/` | Consolidated evidence, methodological decisions, and analysis plan |
+| [Reports/](Reports/) | Dated research progress reports, evidence, blockers, and next actions |
 | `src/` | Reusable Julia model, observation, and inference components |
 | `scripts/` | Reproducible command-line entry points |
 | `data/` | Data conventions and local raw/processed data, excluded from Git |
 | `results/` | Local generated figures, tables, and fitted objects, excluded from Git |
 | `.github/workflows/` | Julia package-loading smoke check and synthetic Julia and Python fixtures |
+
+Reports on unmerged `torkel/` branches are available before they appear on `main`. On GitHub, find the relevant branch in the branch list or its pull request, select that branch, and open `Reports/`.
 
 For each downloaded dataset, record provenance, access date, source version, licence, units, and a checksum before using it. Data redistribution remains subject to the original provider's terms; the repository licence covers original project material only.
