@@ -42,7 +42,7 @@ The [2013–2019 source contract and workflow](demographic-sources-2013-2019.md)
 
 ### Annual NREVSS reported PCR positivity
 
-The [annual weighting decomposition](nrevss-annual-weighting-2013-2019.md) separates within-region reweighting of reporting weeks from reweighting of reporting regions. The empirical run and independent replay await the original SHA-pinned CDC export in the analysis workspace.
+The empirical [annual weighting decomposition](nrevss-annual-weighting-2013-2019.md) and independent replay agree on the SHA-pinned CDC export. Global count pooling raised reported PCR positivity by 1.278–3.547 percentage points across the seven calendar years. Within-region test-volume weighting accounted for the larger contribution every year, including on matched Saturday ordinal support. Will can use these contrasts to interpret the annual surveillance summaries. The empirical US likelihood choice remains open.
 
 ## Comparisons and interpretation
 

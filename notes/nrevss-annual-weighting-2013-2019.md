@@ -20,16 +20,34 @@ The total gap `C − A` is the sum of `B − A` and `C − B`. The first compone
 
 The matched sensitivity uses only Saturday ordinals, counted from each calendar year's first Saturday, with eligible rows in all ten regions in every study year. This drops an extra ordinal in a 53-Saturday year and would drop any ordinal lacking eligible support in any region-year. The output counts tested rows excluded by matching. This controls the number and ordinal positions of weeks contributing to each annual estimate. It cannot establish stable laboratory participation, test indications or catchments. The contrasts describe redistribution of weight among reported tests and reporting units. The aggregate file lacks the sampling information needed to infer population incidence, population weights or assay performance.
 
+## Results on the pinned CDC export
+
+The baseline includes all 3,650 expected PCR region-weeks across the ten HHS regions. Every year has full calendar-year support by Saturday ending, with 52 Saturdays in six years and 53 in 2016. There were no absent or zero-test rows. The analysis retained 257 tested rows with zero detections and 11 CDC-flagged rows.
+
+| Year | A (%) | B (%) | C (%) | Within region (pp) | Region mix (pp) | C − A (pp) | Matched C − A (pp) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2013 | 6.193 | 9.373 | 9.740 | +3.180 | +0.367 | +3.547 | +3.547 |
+| 2014 | 5.397 | 6.653 | 6.675 | +1.256 | +0.022 | +1.278 | +1.278 |
+| 2015 | 5.374 | 7.272 | 7.406 | +1.898 | +0.134 | +2.031 | +2.031 |
+| 2016 | 5.645 | 7.369 | 7.312 | +1.725 | −0.057 | +1.667 | +1.541 |
+| 2017 | 5.125 | 7.471 | 7.550 | +2.346 | +0.079 | +2.425 | +2.425 |
+| 2018 | 5.164 | 7.650 | 7.779 | +2.487 | +0.129 | +2.615 | +2.615 |
+| 2019 | 5.674 | 8.066 | 7.823 | +2.392 | −0.243 | +2.149 | +2.149 |
+
+Global count pooling raised annual reported positivity by 1.278–3.547 percentage points in every year. Weighting weeks by reported test volume within each region accounted for the larger component in all seven years (+1.256 to +3.180 pp). Weighting regions by annual test totals reinforced that increase in five years and partially offset it in 2016 and 2019 (−0.243 to +0.367 pp overall).
+
+Matching retained the first 52 Saturday ordinals in all ten regions and seven years. It removed ten tested rows at ordinal 53 in 2016 and left the other six annual estimates identical. For 2016, C fell to 6.981% and A to 5.440%. The gap stayed positive at +1.541 pp, with +1.631 pp from within-region weighting and −0.090 pp from region mix. The direction of the total gap and the larger absolute contribution of within-region weighting held in every year on matched support.
+
 ## Reproduce the annual table and independent replay
 
-From the repository root, use Python 3.9 or later and place the exact original CDC export at `data/raw/surveillance-audit/nrevss.csv`. Both commands check the file against the repository's `nrevss.csv` SHA-256 pin before parsing. The verifier reads the source independently and uses SQLite window totals to calculate the baseline weighting directly at the row level. The published table format exposes only annual aggregates.
+From the repository root, use Python 3.9 or later and set `NREVSS_CSV` to the path of the preserved CDC export if it is stored outside `data/raw/surveillance-audit/nrevss.csv`. Both commands check the file against the repository's `nrevss.csv` SHA-256 pin before parsing. The verifier reads the source independently and uses SQLite window totals to calculate the baseline weighting directly at the row level. The output contains annual aggregates.
 
 ```sh
-source_csv=data/raw/surveillance-audit/nrevss.csv
+source_csv=${NREVSS_CSV:-data/raw/surveillance-audit/nrevss.csv}
 summary_csv=$(mktemp results/nrevss-annual-weighting.XXXXXX)
 python -B scripts/summarize_nrevss_weighting.py "$source_csv" > "$summary_csv" &&
     python -B scripts/verify_nrevss_weighting.py "$source_csv" "$summary_csv" &&
     mv "$summary_csv" results/nrevss-annual-weighting-2013-2019.csv
 ```
 
-The empirical run awaits the original CSV in the analysis workspace. The expected SHA-256 is `157893051636c43a29b7a881e6d031dc2381ce157c553b33c3586f992e7348cc`.
+The CLI and baseline verifier ran against the restored 544,023-byte export with SHA-256 `157893051636c43a29b7a881e6d031dc2381ce157c553b33c3586f992e7348cc`. A separate SQLite calculation reconstructed the calendar, matched eligible ordinals across all 70 region-years, and reproduced the coverage, counts, rates, and gaps for all 14 year-and-support rows.
