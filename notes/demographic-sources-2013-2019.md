@@ -58,6 +58,18 @@ The September 30, 2025 Census release includes the commonwealth age-by-sex workb
 
 The official files produced 546 unique target municipio-years. `UNDER5_TOT` and `AGE04_TOT` agreed for every record in that window. The sums of `POPESTIMATE` and ages 0–4 matched the commonwealth workbook in persons for all seven dates. The output is a separate commonwealth series. U.S. Virgin Islands population remains outside the verified geography, so full HHS Region 2 population coverage remains open.
 
+### U.S. Virgin Islands
+
+On 27 November 2026 at 10:53 UTC, a bounded GET of the official IDB bulk archive from the saved Cloud environment stopped with curl exit 56 and `CONNECT tunnel failed, response 403`. Curl reported HTTP `000` and zero download bytes. The archive member definitions and vintage in the bytes, SHA-256, seven unique 2013–2019 territory records, and an independent age-band reconciliation remain unverified. The November 2026 release notes list `VI` among the updated areas. The five-year API documents `POP` as midyear population and `POP0_4` as total midyear population ages 0–4. A data query requires an API key. [Bulk archive](https://www.census.gov/data-tools/demo/data/idb/dataset/idbzip.zip), [November 2026 release notes](https://www.census.gov/programs-surveys/international-programs/data/tools/international-data-base/idb-release-notes/2026.html), [API variables](https://api.census.gov/data/timeseries/idb/5year/groups/IDB5YEAR.html), [API access requirements](https://api.census.gov/data/timeseries/idb/5year/examples.html).
+
+| Comparison source | Year | Total | Ages 0–4 |
+| --- | ---: | ---: | ---: |
+| [University of the Virgin Islands Community Survey](https://www.uvi.edu/research/eastern-caribbean-center/files/pdfs/VICS_2015.pdf), survey estimate supplied for comparison | 2015 | 100,768 | 5,241 |
+| [2010 Census demographic profile](https://www.uvi.edu/files/documents/Research_and_Public_Service/ECC/SRI/2010%20USVI%20Census%20Dempgraphic%20Prof%20Printable.pdf), April 1 count | 2010 | 106,405 | 7,500 |
+| [2020 Census demographic profile DP1](https://data.census.gov/cedsci/table?d=DECIA+U.S.+Virgin+Islands+Demographic+Profile&g=0400000US78&tid=DECENNIALDPVI2020.DP1), April 1 count | 2020 | 87,146 | 4,468 |
+
+The local bureau annual resident totals of 104,761 in 2013 and 95,668 in 2019 provide total-only comparisons. These reference values leave the November 2026 IDB annual midyear series unverified. [U.S. Virgin Islands Bureau of Economic Research annual indicators](https://usviber.org/wp-content/uploads/2022/12/econ-21.pdf).
+
 ## Reproduce locally
 
 Use Python 3.11 or later and install the workbook readers with `python3 -m pip install -r scripts/requirements-demography.txt`. [The source contract](../data/demographic-sources.toml) identifies the official tables, dates, vintages, units, and observed SHA-256 pins. The commands below use the default local Git-ignored paths. To keep files outside a checkout, pass `--cache-dir` before the subcommand and `--output` after either build.
