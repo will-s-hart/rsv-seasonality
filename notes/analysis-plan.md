@@ -44,6 +44,8 @@ The [2013–2019 source contract and workflow](demographic-sources-2013-2019.md)
 
 The empirical [annual weighting decomposition](nrevss-annual-weighting-2013-2019.md) and independent replay agree on the SHA-pinned CDC export. Global count pooling raised reported PCR positivity by 1.278–3.547 percentage points across the seven calendar years. Within-region test-volume weighting accounted for the larger contribution every year, including on matched Saturday ordinal support. Will can use these contrasts to interpret the annual surveillance summaries. The empirical US likelihood choice remains open.
 
+The [adjacent-year PCR and antigen comparison](nrevss-adjacent-assay-agreement-2013-2019.md) found directional agreement in five of six pooled contrasts and two of six equal-weight contrasts on positive-denominator support. Equal-weight agreement rose to five of six on the 100-test screen, which kept about half the cells. Will's next observation-validation question is whether agreement persists among stable contributors under comparable testing eligibility. This requires linked contributor metadata or an overlapping reference beyond the aggregate export.
+
 ## Comparisons and interpretation
 
 - Compare simple climate curves and splines against the main joint neural response and a behaviour-informed response with a learned low-amplification region. Include a calendar-forcing reference within the same renewal backbone. Test temperature–humidity interactions and modest adaptation shifts; do not require a double peak in every country.
