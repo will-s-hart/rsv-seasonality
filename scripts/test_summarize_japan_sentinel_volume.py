@@ -1,9 +1,15 @@
 from datetime import date
 from fractions import Fraction
 from itertools import product
+from pathlib import Path
+from shutil import copyfile
+import subprocess
+import sys
+from tempfile import TemporaryDirectory
 import unittest
 
 from summarize_japan_sentinel_volume import (
+    AUDIT,
     change_bounds,
     direction,
     format_interval,
@@ -11,6 +17,9 @@ from summarize_japan_sentinel_volume import (
     report_bounds,
     site_week_bounds,
 )
+
+
+SCRIPT = Path(__file__).with_name("summarize_japan_sentinel_volume.py").resolve()
 
 
 class JapanSentinelVolume(unittest.TestCase):
@@ -63,6 +72,48 @@ class JapanSentinelVolume(unittest.TestCase):
             ["ambiguous", "rise", "fall", "rise", "fall", "rise"],
         )
         self.assertEqual(direction(change_bounds(rates[0], rates[-1])), "rise")
+
+    def test_cli_rejects_invalid_audit_before_output(self):
+        original = AUDIT.read_text(encoding="utf-8")
+        separator = "| --- | ---: | ---: | ---: | ---: | ---: |"
+        mutations = [
+            ("96,625", "96,62", "2013 national reports"),
+            ("140,093", "14,00,093", "2019 national reports"),
+            ("2,995–3,161", "29,95–3,161", "2013 weekly site minimum"),
+            ("2,911–3,176", "2,911–3,17", "2019 weekly site maximum"),
+            ("| 134 | 2,995", "| 13,4 | 2,995", "2013 prefecture-weeks"),
+            ("74.1%", "74,1%", "2013: expected an under-two percentage"),
+            (separator, separator.replace("---:", "bad", 1), "expected a Markdown delimiter"),
+            (separator, "| --- | ---: |", "expected six pipe-delimited columns"),
+            ("| 2013 |", "2013 |", "expected six pipe-delimited columns"),
+            ("| 2015 | 53 |", "| 2015 | 52 |", "2015: expected 53 diagnosis weeks"),
+            ("| 2019 | 52 |", "| 2019 | 53 |", "2019: expected 52 diagnosis weeks"),
+            ("2,911–3,176", "3,176–2,911", "Weekly extrema must be positive"),
+        ]
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "scripts").mkdir()
+            (root / "notes").mkdir()
+            script = root / "scripts" / SCRIPT.name
+            copyfile(SCRIPT, script)
+            verifier = SCRIPT.with_name("check_surveillance_sources.py")
+            copyfile(verifier, script.with_name(verifier.name))
+            audit = root / "notes" / AUDIT.name
+            for old, new, error in mutations:
+                with self.subTest(new=new):
+                    self.assertIn(old, original)
+                    audit.write_text(original.replace(old, new, 1), encoding="utf-8")
+                    result = subprocess.run(
+                        [sys.executable, "-B", str(script)], capture_output=True, check=False
+                    )
+                    self.assertEqual(result.returncode, 1)
+                    self.assertEqual(result.stdout, b"")
+                    self.assertIn(error.encode("utf-8"), result.stderr)
+
+    def test_cli_reproduces_documented_tables(self):
+        note = AUDIT.with_name("japan-annual-sentinel-volume-2013-2019.md")
+        output = subprocess.check_output([sys.executable, "-B", str(SCRIPT)])
+        self.assertIn(output + b"\n", note.read_bytes())
 
 
 if __name__ == "__main__":
